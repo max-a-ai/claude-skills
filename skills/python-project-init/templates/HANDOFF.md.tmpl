@@ -1,0 +1,82 @@
+# {{PROJECT_NAME}} — Handoff
+
+Generated: {{TODAY}}
+
+---
+
+## Status Snapshot
+
+Scaffold in place. Runs under `uv sync`. All three quality gates pass:
+
+- `uv run ruff check src/`
+- `uv run ruff format --check src/`
+- `uv run mypy src/` (strict)
+
+Next up: (replace with the first feature to implement).
+
+---
+
+## Goal
+
+(One short paragraph: what this project is and why it exists.)
+
+---
+
+## Confirmed Decisions
+
+| Decision | Choice | Rationale |
+|---|---|---|
+| Python version | **{{PYTHON_VERSION}}** | (constraint or default) |
+| Package manager | **UV** | Reproducibility. `uv sync`, `uv run`. |
+| Build backend | **hatchling** | Stable, well-documented. |
+| Project layout | **src layout** | `src/{{MODULE_NAME}}/` |
+| Linter / formatter | **Ruff** (79 cols) | |
+| Type checker | **mypy** (strict) | |
+
+(Add rows as decisions accumulate. Every new runtime dep needs a row.)
+
+---
+
+## Repository Structure
+
+```
+{{PROJECT_NAME}}/
+├── .vault-{{PROJECT_NAME}}/
+│   ├── {{PROJECT_NAME}}.canvas  # Obsidian canvas — live project dashboard
+│   ├── progress.md              # Mermaid Gantt + chronological log
+│   └── todo.md                  # Open tasks
+├── src/
+│   └── {{MODULE_NAME}}/
+│       ├── __init__.py
+│       └── __main__.py
+├── instructions.md              # Agent coding standards
+├── pyproject.toml
+├── .python-version
+├── README.md
+├── .gitignore
+└── HANDOFF.md                   # this file
+```
+
+### Vault
+
+Open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` in Obsidian for a
+live dashboard of the project. Green nodes = done, red = open.
+
+If Obsidian doesn't show the `.vault-<name>/` directory (it's dot-prefixed
+and hidden by default in some configs), enable "Show hidden files" or
+open the canvas directly via its file path.
+
+---
+
+## For the Next Handoff
+
+1. Read this file top-to-bottom.
+2. Open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` for the visual
+   index.
+3. Read `instructions.md` for coding standards (enforced by ruff + mypy).
+4. Check `.vault-{{PROJECT_NAME}}/todo.md` for current backlog.
+5. Check `.vault-{{PROJECT_NAME}}/progress.md` for the chronological log.
+6. Run `uv sync` to reproduce the env.
+7. When you finish a session, append to `progress.md`, prune `todo.md`,
+   and update this file if you learned something future-you would need
+   to pick up cold.

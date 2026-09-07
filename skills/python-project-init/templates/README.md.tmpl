@@ -1,0 +1,23 @@
+# {{PROJECT_NAME}}
+
+{{DESCRIPTION}}
+
+## Quickstart
+
+```bash
+uv sync
+uv run {{PROJECT_NAME}}
+```
+
+## Verify
+
+```bash
+uv run ruff check src/
+uv run ruff format --check src/
+uv run mypy src/
+```
+
+## Layout
+
+See [HANDOFF.md](HANDOFF.md) for the full picture. Live dashboard:
+open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` in Obsidian.
