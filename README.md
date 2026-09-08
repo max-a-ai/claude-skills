@@ -13,14 +13,27 @@ Combines three sources:
 Plus `rules/CLAUDE.md` — standing rules that must hold on every turn, not just
 when a skill is invoked.
 
-## Install
+## Install (including on a new machine)
 
 ```bash
 git clone --recurse-submodules git@github.com:max-a-ai/claude-skills.git ~/.claude-skills
 ~/.claude-skills/install.sh
 ```
 
-That is the whole setup. It is global — every project, every session, no per-repo cloning.
+That is the whole setup, on any machine. It installs three things into `~/.claude/`:
+
+| | |
+|---|---|
+| `~/.claude/skills/` | 33 skills, symlinked back here |
+| `~/.claude/CLAUDE.md` | standing rules, symlinked to `rules/CLAUDE.md` |
+| `~/.claude/hooks/` + a `PostToolUse` entry in `settings.json` | the ruff/mypy gate |
+
+Everything lands in your **home directory**, never in a project. Your code repos
+get no `.claude/` directory, no gitignore entry, and nothing to commit — `git
+status` in them is unaffected. Only this repo tracks the skills.
+
+The one prerequisite is [uv](https://docs.astral.sh/uv/). `ruff` and `mypy` do
+**not** need to be on PATH; the hook runs them through uv.
 
 ## Why an installer is needed
 
@@ -55,6 +68,29 @@ Only needed when collaborators or CI must get the skills without cloning this re
 ```bash
 ~/.claude-skills/install.sh --project ~/code/some-repo
 ```
+
+## Enforcing ruff and mypy
+
+`hooks/lint_type_gate.sh` runs as a `PostToolUse` hook on `Write|Edit|MultiEdit`.
+After Claude touches any `*.py` file inside a project with a `pyproject.toml` it:
+
+1. runs `ruff check --fix` then `ruff format` — most issues vanish mechanically;
+2. runs `mypy` when the project declares a config **and** has a venv;
+3. exits non-zero on anything left, feeding the errors back so Claude must fix
+   them before continuing.
+
+Tools resolve through uv: a project with `uv.lock` or `.venv` uses its own pinned
+versions, otherwise ruff runs ephemerally via `uvx`. Mypy is skipped without a
+project env, because type-checking with the dependencies missing reports noise
+rather than real errors — run `uv sync` first.
+
+Escape hatches: `SKIP_TYPECHECK=1`, or a `.no-typecheck` file at the repo root.
+Skip installing the hook entirely with `./install.sh --no-hooks`.
+
+To get a *new* project set up with the matching config (uv, src layout, ruff at
+line-length 79, mypy strict), run the `python-project-init` skill in it. The
+`pyproject.toml` it writes **is** committed to that project — it is the project's
+own config, not skill content.
 
 ## Standing rules
 

@@ -17,6 +17,7 @@
 #   ./install.sh --dry-run        print actions without touching anything
 #   ./install.sh --prune          also remove stale links left by earlier runs
 #   ./install.sh --no-rules       skip linking rules/CLAUDE.md to ~/.claude/CLAUDE.md
+#   ./install.sh --no-hooks       skip installing the ruff/mypy enforcement hook
 #
 set -euo pipefail
 
@@ -46,6 +47,7 @@ SKIP=(
 MODE=link
 PROJECT=""
 RULES=1
+HOOKS=1
 DRY=0
 PRUNE=0
 LIST=0
@@ -61,6 +63,7 @@ while [ $# -gt 0 ]; do
     --prune)   PRUNE=1; shift ;;
     --list)    LIST=1; shift ;;
     --no-rules) RULES=0; shift ;;
+    --no-hooks) HOOKS=0; shift ;;
     -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "error: unknown flag $1" >&2; exit 1 ;;
   esac
@@ -138,6 +141,40 @@ for DEST in "${DESTS[@]}"; do
     done
   fi
 done
+
+# --- hooks -------------------------------------------------------------------
+# CLAUDE.md states the ruff/mypy rule; this hook is what actually enforces it,
+# by rejecting Claude's edit when the file does not come back clean.
+if [ "$HOOKS" = 1 ] && [ "$MODE" = link ] && [ -d "$REPO/hooks" ]; then
+  hookdir="$HOME/.claude/hooks"
+  cmd="$hookdir/lint_type_gate.sh"
+  if [ "$DRY" = 1 ]; then
+    echo "→ would install hooks into $hookdir and register them in settings.json"
+  else
+    mkdir -p "$hookdir"
+    for h in "$REPO"/hooks/*.sh; do
+      ln -sfn "$h" "$hookdir/$(basename "$h")"
+    done
+    echo "→ $hookdir  (hooks)"
+
+    HOOK_CMD="$cmd" python3 - <<'PYWIRE'
+import json, os, pathlib
+cmd = os.environ["HOOK_CMD"]
+p = pathlib.Path.home() / ".claude/settings.json"
+s = json.loads(p.read_text()) if p.exists() else {}
+post = s.setdefault("hooks", {}).setdefault("PostToolUse", [])
+if any(h.get("command") == cmd for e in post for h in e.get("hooks", [])):
+    print("   lint_type_gate already registered")
+else:
+    post.append({
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [{"type": "command", "command": cmd}],
+    })
+    p.write_text(json.dumps(s, indent=2) + "\n")
+    print("   registered lint_type_gate as a PostToolUse hook")
+PYWIRE
+  fi
+fi
 
 # --- standing rules ----------------------------------------------------------
 # Skills load only when invoked, so a rule that must hold on every turn (commit
