@@ -26,7 +26,7 @@ That is the whole setup, on any machine. It installs three things into `~/.claud
 |---|---|
 | `~/.claude/skills/` | 33 skills, symlinked back here |
 | `~/.claude/CLAUDE.md` | standing rules, symlinked to `rules/CLAUDE.md` |
-| `~/.claude/hooks/` + a `PostToolUse` entry in `settings.json` | the ruff/mypy gate |
+| `~/.claude/hooks/` + `hooks` entries in `settings.json` | the three enforcement hooks |
 
 Everything lands in your **home directory**, never in a project. Your code repos
 get no `.claude/` directory, no gitignore entry, and nothing to commit — `git
@@ -69,7 +69,23 @@ Only needed when collaborators or CI must get the skills without cloning this re
 ~/.claude-skills/install.sh --project ~/code/some-repo
 ```
 
-## Enforcing ruff and mypy
+## Enforcement hooks
+
+Skills and `CLAUDE.md` state the rules; these three make them binding by failing
+the tool call when one is broken. `install.sh` symlinks them into
+`~/.claude/hooks/` and registers them in `settings.json` (idempotently).
+
+| Hook | Event | Blocks |
+|---|---|---|
+| `lint_type_gate.sh` | `PostToolUse` on `Write\|Edit\|MultiEdit` | a `*.py` edit that leaves ruff or mypy errors |
+| `enforce_wandb_training.sh` | `PreToolUse` on `Bash` | a `main.py` launch without `--wandb-project`/`--wandb-name` |
+| `audit_gate.sh` | `Stop` | ending the turn with Python/config changes `general-codebase` has not audited |
+
+`mark_audited.sh` clears the Stop gate after an audit passes; it re-arms on the
+next Python edit. `_audit_state.sh` is the shared fingerprint library — both use
+it so they cannot disagree about what "audited" means.
+
+### The ruff/mypy gate
 
 `hooks/lint_type_gate.sh` runs as a `PostToolUse` hook on `Write|Edit|MultiEdit`.
 After Claude touches any `*.py` file inside a project with a `pyproject.toml` it:
@@ -85,7 +101,28 @@ project env, because type-checking with the dependencies missing reports noise
 rather than real errors — run `uv sync` first.
 
 Escape hatches: `SKIP_TYPECHECK=1`, or a `.no-typecheck` file at the repo root.
-Skip installing the hook entirely with `./install.sh --no-hooks`.
+
+### The wandb gate
+
+Blocks any `main.py` launch that would not be logged. It also opens any `*.sh`
+queue script named on the command line and rejects it if a job inside is missing
+the flags — the classic "curves missing from wandb" bug, where the wrapper passes
+them for the first job only. It cannot see into a script invoked indirectly.
+
+Escape hatches: prefix `NO_WANDB=1` for a deliberate throwaway run, or use
+`--phase test` for evaluation.
+
+### The audit gate
+
+Deliberately narrow, because a Stop hook that fires constantly gets turned off.
+It only fires in a git repo, only when `*.py`/`pyproject.toml`/`*.yaml` differ
+from HEAD, and never twice for the same state. The fingerprint hashes the
+*content* of the changes, so editing an already-modified file re-arms the gate.
+The marker lives in `.git/`, so it is never committed.
+
+Escape hatches: `SKIP_AUDIT=1`, or a `.no-audit` file at the repo root.
+
+Skip installing all hooks with `./install.sh --no-hooks`.
 
 To get a *new* project set up with the matching config (uv, src layout, ruff at
 line-length 79, mypy strict), run the `python-project-init` skill in it. The

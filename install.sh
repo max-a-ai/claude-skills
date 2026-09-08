@@ -143,11 +143,10 @@ for DEST in "${DESTS[@]}"; do
 done
 
 # --- hooks -------------------------------------------------------------------
-# CLAUDE.md states the ruff/mypy rule; this hook is what actually enforces it,
-# by rejecting Claude's edit when the file does not come back clean.
+# CLAUDE.md and the skills state the rules; these hooks are what enforce them,
+# by rejecting the tool call when a rule is broken.
 if [ "$HOOKS" = 1 ] && [ "$MODE" = link ] && [ -d "$REPO/hooks" ]; then
   hookdir="$HOME/.claude/hooks"
-  cmd="$hookdir/lint_type_gate.sh"
   if [ "$DRY" = 1 ]; then
     echo "→ would install hooks into $hookdir and register them in settings.json"
   else
@@ -157,21 +156,42 @@ if [ "$HOOKS" = 1 ] && [ "$MODE" = link ] && [ -d "$REPO/hooks" ]; then
     done
     echo "→ $hookdir  (hooks)"
 
-    HOOK_CMD="$cmd" python3 - <<'PYWIRE'
+    HOOK_DIR="$hookdir" python3 - <<'PYWIRE'
 import json, os, pathlib
-cmd = os.environ["HOOK_CMD"]
+
+hookdir = os.environ["HOOK_DIR"]
+
+# (event, matcher or None, script)
+WIRING = [
+    ("PostToolUse", "Write|Edit|MultiEdit", "lint_type_gate.sh"),
+    ("PreToolUse",  "Bash",                 "enforce_wandb_training.sh"),
+    ("Stop",        None,                   "audit_gate.sh"),
+]
+# mark_audited.sh and _audit_state.sh are linked but never registered: one is
+# run by hand to clear the gate, the other is a shared library.
+
 p = pathlib.Path.home() / ".claude/settings.json"
 s = json.loads(p.read_text()) if p.exists() else {}
-post = s.setdefault("hooks", {}).setdefault("PostToolUse", [])
-if any(h.get("command") == cmd for e in post for h in e.get("hooks", [])):
-    print("   lint_type_gate already registered")
-else:
-    post.append({
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [{"type": "command", "command": cmd}],
-    })
+hooks = s.setdefault("hooks", {})
+
+added = []
+for event, matcher, script in WIRING:
+    cmd = f"{hookdir}/{script}"
+    entries = hooks.setdefault(event, [])
+    if any(h.get("command") == cmd for e in entries for h in e.get("hooks", [])):
+        continue
+    entry = {"hooks": [{"type": "command", "command": cmd}]}
+    if matcher:
+        entry["matcher"] = matcher
+    entries.append(entry)
+    added.append(f"{script} → {event}")
+
+if added:
     p.write_text(json.dumps(s, indent=2) + "\n")
-    print("   registered lint_type_gate as a PostToolUse hook")
+    for a in added:
+        print(f"   registered {a}")
+else:
+    print("   all hooks already registered")
 PYWIRE
   fi
 fi

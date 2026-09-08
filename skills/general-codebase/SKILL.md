@@ -25,9 +25,9 @@ rules are enforced by three layers — know which is which:
 |-------|------|-------------|--------------|
 | New Python repo | Scaffold with the project initializer (UV + ruff + mypy strict, etc.) before writing code | CLAUDE.md + this audit | `python-project-init` |
 | Writing Python | ruff autofix on every edit; mypy must pass in repos that declare a mypy config | **PostToolUse hook** `lint_type_gate.sh` ✅ live | `ruff-sweep`, `mypy-sweep` |
-| Before training | every `main.py` training run passes `--wandb-project`/`--wandb-name` | ⚠️ `enforce_wandb_training.sh` **not built yet** — audit only | `wandb-training` |
+| Before training | every `main.py` training run passes `--wandb-project`/`--wandb-name` | **PreToolUse hook** `enforce_wandb_training.sh` ✅ live | `wandb-training` |
 | Single-frame trainings | log/checkpoint + eval every epoch (`save_interval: 1`, `eval_every_epoch: true`); sequential runs keep their cadence | configs | `wandb-training` |
-| Before "done" | run this audit after code/config changes | ⚠️ `audit_gate.sh` **not built yet** — run this skill manually | this skill |
+| Before "done" | run this audit after code/config changes | **Stop hook** `audit_gate.sh` ✅ live | this skill |
 | Any commit | one-line `<prefix> <description>`, no Claude attribution | CLAUDE.md + this audit | `git-it` |
 | Any push | the user pushes, never Claude — print the command instead | CLAUDE.md + this audit | `git-it` |
 
@@ -42,7 +42,11 @@ rules are enforced by three layers — know which is which:
    `.no-typecheck`). The hook runs both through `uv`, so neither tool needs to
    be on PATH — but mypy is **skipped when the project has no venv**, so check
    `uv sync` has been run before trusting a clean result.
-3. **Training → wandb** — every `main.py` launch (incl. queue scripts, cron) has
+3. **Training → wandb** — the PreToolUse hook blocks a direct `main.py` launch
+   without `--wandb-project`/`--wandb-name`, and inspects any `*.sh` queue script
+   named on the command line for jobs missing the flags. It cannot see inside a
+   script invoked indirectly (cron, nohup, a wrapper calling a wrapper) — check
+   those by hand. Confirm every `main.py` launch (incl. queue scripts, cron) has
    `--wandb-project`/`--wandb-name`; runs appear in wandb (entity `erik_hm`;
    single-frame → `action-aldenhoven-3dkp`, sequential → `action-aldenhoven-3dkp-over-T`);
    PreToolUse hook still wired; no wandb key hardcoded (auth via `~/.netrc`).
@@ -65,9 +69,10 @@ rules are enforced by three layers — know which is which:
    confirm wandb) — cite evidence.
 3. Report a short PASS/FAIL table; for each FAIL give the fix + owning skill, and
    offer to fix.
-4. **Final step:** `mark_audited.sh` and the Stop gate are not built yet, so
-   there is nothing to clear — just report the result. Until `audit_gate.sh`
-   exists, this audit only runs when invoked, never automatically.
+4. **Final step (clears the Stop audit gate):** run
+   `~/.claude/hooks/mark_audited.sh` from the repo. Do this only after the audit
+   actually passed (or the user accepted the FAILs). The gate re-arms on the next
+   Python/config edit, so clearing it is not permanent.
 
 Keep this checklist in sync as new rules/skills/hooks are added — it is the
 source of truth the Stop gate points to.
