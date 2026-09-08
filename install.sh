@@ -16,6 +16,7 @@
 #   ./install.sh --list           show what would be installed, grouped by set
 #   ./install.sh --dry-run        print actions without touching anything
 #   ./install.sh --prune          also remove stale links left by earlier runs
+#   ./install.sh --no-rules       skip linking rules/CLAUDE.md to ~/.claude/CLAUDE.md
 #
 set -euo pipefail
 
@@ -44,6 +45,7 @@ SKIP=(
 
 MODE=link
 PROJECT=""
+RULES=1
 DRY=0
 PRUNE=0
 LIST=0
@@ -58,6 +60,7 @@ while [ $# -gt 0 ]; do
     --dry-run) DRY=1; shift ;;
     --prune)   PRUNE=1; shift ;;
     --list)    LIST=1; shift ;;
+    --no-rules) RULES=0; shift ;;
     -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "error: unknown flag $1" >&2; exit 1 ;;
   esac
@@ -135,6 +138,23 @@ for DEST in "${DESTS[@]}"; do
     done
   fi
 done
+
+# --- standing rules ----------------------------------------------------------
+# Skills load only when invoked, so a rule that must hold on every turn (commit
+# convention, no Claude attribution, never push) cannot live in one. It goes in
+# CLAUDE.md, which is always in context.
+if [ "$RULES" = 1 ] && [ "$MODE" = link ] && [ -f "$REPO/rules/CLAUDE.md" ]; then
+  target="$HOME/.claude/CLAUDE.md"
+  if [ "$DRY" = 1 ]; then
+    echo "→ would link $target"
+  elif [ -e "$target" ] && [ ! -L "$target" ]; then
+    echo "→ $target exists and is not a symlink — left alone." >&2
+    echo "  Merge it by hand, or move it aside and re-run." >&2
+  else
+    ln -sfn "$REPO/rules/CLAUDE.md" "$target"
+    echo "→ $target  (rules)"
+  fi
+fi
 
 echo
 echo "${#names[@]} skills installed. Skipped: ${SKIP[*]:-none}"

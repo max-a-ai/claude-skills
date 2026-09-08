@@ -10,6 +10,9 @@ Combines three sources:
 | `vendor/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
 | `vendor/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
 
+Plus `rules/CLAUDE.md` — standing rules that must hold on every turn, not just
+when a skill is invoked.
+
 ## Install
 
 ```bash
@@ -52,6 +55,23 @@ Only needed when collaborators or CI must get the skills without cloning this re
 ```bash
 ~/.claude-skills/install.sh --project ~/code/some-repo
 ```
+
+## Standing rules
+
+A skill only loads when something triggers it, so a rule that must hold on *every*
+turn cannot live in one. `rules/CLAUDE.md` is symlinked to `~/.claude/CLAUDE.md`
+by the installer, which Claude Code reads into context in every session.
+
+It currently fixes the git convention: one-line commit messages prefixed with one
+of eight types (`add:`, `bug:`, `minor:`, `refactor:`, `docs:`, `test:`, `config:`,
+`remove:`), no Claude attribution trailers, and no pushing — the owner pushes.
+
+The commit convention is enforced in three layers: `rules/CLAUDE.md` states it,
+`git-it` implements the interactive flow around it, and `general-codebase` audits
+that commits actually followed it.
+
+Skip the symlink with `./install.sh --no-rules`. An existing non-symlink
+`~/.claude/CLAUDE.md` is never overwritten.
 
 ## Other commands
 

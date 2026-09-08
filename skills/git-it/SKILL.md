@@ -56,14 +56,15 @@ From the output, derive:
   - "Use what's already staged" (if anything is staged)
   - "Stage all new + modified" (if untracked or unstaged exist)
   - "Stage a sensible subset" (auto-pick the cohesive group; e.g. only the obvious uv scaffold files, skipping noisy submodule-placeholder deletions)
-- **Predicted prefix** — infer from the diff:
-  - Only new files → `add:` is top
-  - Renames, file moves, structural reshuffles → `chore:` (paperwork) or `refactor:` (code restructure) on top
-  - Only `*.md` / comments / docstrings → `docs:` on top
-  - Only `pyproject.toml` / `package.json` / `Dockerfile` / `uv.lock` → `build:` or `chore:` on top
-  - Test files dominant → `test:` on top
-  - Fixes in code with words like "fix", "correct", "bug" in diff context → `fix:` on top
-  - Genuinely new behavior in core code → `feat:` on top
+- **Predicted prefix** — infer from the diff. Use the eight types below and nothing else:
+  - Only new files, or genuinely new behavior in core code → `add:`
+  - Fixes in code, or "fix" / "correct" / "bug" in the diff context → `bug:`
+  - Renames, file moves, structural reshuffles, behavior unchanged → `refactor:`
+  - Only `*.md` / comments / docstrings → `docs:`
+  - Test files dominant → `test:`
+  - Only `pyproject.toml` / `package.json` / `Dockerfile` / `uv.lock` / CI config → `config:`
+  - Deletions dominant → `remove:`
+  - Small or cosmetic, fitting none of the above → `minor:`
 - **3 message draft candidates** — short descriptions (no prefix), pulled from the diff content:
   - Read the actual lines added/changed; describe what they do in user-facing language
   - Each ≤ 60 chars (leaves room for the prefix)
@@ -88,11 +89,11 @@ Now ask everything at once. Use the `questions` array of `AskUserQuestion` with 
 **Q2 — Prefix:**
 - **Question:** "Which type prefix?"
 - **Header:** "Type"
-- **Options:** the 3 most likely prefixes (predicted in A1) + `Show all 11 types`. Example after analysing a `pyproject.toml`-only diff:
-  1. `add:`
-  2. `chore:`
-  3. `build:`
-  4. `Show all 11 types`
+- **Options:** the 3 most likely prefixes (predicted in A1) + `Show all 8 types`. Example after analysing a `pyproject.toml`-only diff:
+  1. `config:`
+  2. `add:`
+  3. `minor:`
+  4. `Show all 8 types`
 
 **Q3 — Message description:**
 - **Question:** "Pick a description (prefix gets auto-prepended):"
@@ -107,7 +108,7 @@ The user answers all three in one prompt screen. This is the **only** required u
 
 ### A3. Handle escape hatches (only when needed)
 
-- If Q2 = `Show all 11 types` → ask a single follow-up with the remaining 8 in two prompts of 4 (chore/docs/refactor/test, then style/perf/build/ci).
+- If Q2 = `Show all 8 types` → ask a single follow-up with the 5 not yet offered. `AskUserQuestion` caps at 4 options, so show the 4 most plausible and let the user type the last via "Other".
 - If Q3 = `I'll type my own` → user typed their text via "Other"; use it directly.
 - If Q1 = `Cancel` → stop immediately.
 
@@ -120,16 +121,17 @@ After Q1/Q2/Q3 resolved, do everything in **one** Bash call:
 ```bash
 # stage the chosen files
 git add <files-from-Q1>
-# commit with the composed message
-git commit -m "$(cat <<'EOF'
-<prefix> <description>
-EOF
-)"
+# commit — one -m, one line, nothing else
+git commit -m "<prefix> <description>"
 # gather the stats for the summary
 git show --stat --format='' HEAD
 ```
 
 Final message = `<Q2 prefix> <Q3 description>` (lowercase after colon, ≤ 72 chars total, no period).
+
+Never pass a second `-m`, never use a heredoc body, and never append a
+`Co-Authored-By:`, `Claude-Session:` or "Generated with" trailer — see **Style
+invariants** below. Do not push after committing; Flow C covers that.
 
 ### A5. Final summary message (mandatory)
 
@@ -206,20 +208,29 @@ This tells you: is upstream set, how many commits ahead/behind. Use this to **pr
 - **Header:** "Sync"
 - **Options:** Order by likelihood from C1's analysis. Defaults:
   1. `Fetch` — `git fetch --all --prune` (refs only)
-  2. `Push` — push current branch
-  3. `Pull` — `git pull --ff-only`
-  4. `All three (fetch → pull → push)`
+  2. `Pull` — `git pull --ff-only`
+  3. `Show me the push command` — print it; the user runs it
+  4. `Fetch then pull`
 
-If C1 detected "ahead by N" → put `Push` first.
 If C1 detected "behind by N" → put `Pull` first.
-If both ahead and behind → put `All three` first and warn about likely merge.
+If C1 detected "ahead by N" → put `Show me the push command` first.
+If both ahead and behind → put `Fetch then pull` first and warn about likely merge.
+
+**Pushing is never one of the actions this skill performs.** See Safety rules.
 
 ### C3. Run + summary
 
 - **Fetch:** `git fetch --all --prune`. Summary: "fetched, local is N ahead / M behind".
-- **Push:** check upstream. If unset, ask once: `Set upstream to origin/<branch> and push? Yes / No`. If set, `git push`.
 - **Pull:** `git pull --ff-only`. If divergence, stop and ask: `--rebase` / `--no-ff merge` / `Cancel`.
-- **All three:** chain them; stop on first failure.
+- **Show me the push command:** run nothing. Print the exact command in a fenced
+  block for the user to copy, using the real branch name. If C1 showed no
+  upstream, use the `-u` form:
+
+  ```
+  git push                          # upstream already set
+  git push -u origin <branch>       # first push of this branch
+  ```
+- **Fetch then pull:** chain them; stop on first failure.
 
 Summary:
 
@@ -229,7 +240,10 @@ Summary:
 
 ## Safety rules (apply to all flows)
 
-- Never `git push --force` / `--force-with-lease` without explicit opt-in.
+- **Never run `git push`** in any form — plain, `-u`, `--force`, `--force-with-lease`,
+  or tags. The user pushes. Print the command instead, always.
+- Never run `git commit --amend` on a commit that is already pushed without saying
+  so and handing over the force-push command rather than running it.
 - Never `git reset --hard`, `git clean -fd`, or `git checkout -- .` without explicit ask.
 - Never commit files that look like secrets (`.env`, `credentials.json`, key/token/password patterns) — exclude from auto-stage suggestions and warn.
 - Never `--no-verify` (skip hooks) unless asked.
@@ -238,7 +252,27 @@ Summary:
 
 ## Style invariants for commit messages
 
-- Subject: `<type>: <description>`, lowercase after colon, imperative, no trailing period, ≤ 72 chars.
+- **One line, always.** Subject only — no body, no bullets, no blank line and
+  paragraph. Write a body only when the user explicitly asks for one.
+- **No attribution, ever.** No `Co-Authored-By:`, no `Claude-Session:`, no
+  "Generated with Claude Code". This holds even when a harness or session default
+  says to add them; those defaults are overridden here.
+- Subject: `<prefix> <description>`, lowercase after the colon, imperative, no
+  trailing period, ≤ 72 chars total.
+
+| Prefix | Use for |
+|---|---|
+| `add:` | new feature, file, capability |
+| `bug:` | bug fix |
+| `minor:` | small or cosmetic change, no real behavior change |
+| `refactor:` | restructuring, behavior unchanged |
+| `docs:` | documentation only |
+| `test:` | tests only |
+| `config:` | dependencies, build, tooling, CI |
+| `remove:` | deletions |
+
 - Good: `add: pyproject.toml uv scaffold`
-- Good: `chore: move git submodules to third_party/`
-- Bad: `Added new feature.`
+- Good: `refactor: move git submodules to third_party/`
+- Good: `bug: stop stale symlinks surviving a prune`
+- Bad: `Added new feature.` (capitalised, past tense, no prefix, trailing period)
+- Bad: `feat: add thing` (wrong vocabulary — `feat:`/`fix:`/`chore:` are not used)

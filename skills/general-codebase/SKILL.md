@@ -28,6 +28,8 @@ rules are enforced by three layers — know which is which:
 | Before training | every `main.py` training run passes `--wandb-project`/`--wandb-name` | **PreToolUse hook** `enforce_wandb_training.sh` | `wandb-training` |
 | Single-frame trainings | log/checkpoint + eval every epoch (`save_interval: 1`, `eval_every_epoch: true`); sequential runs keep their cadence | configs | `wandb-training` |
 | Before "done" | run this audit after code/config changes | **Stop hook** `audit_gate.sh` | this skill |
+| Any commit | one-line `<prefix> <description>`, no Claude attribution | CLAUDE.md + this audit | `git-it` |
+| Any push | the user pushes, never Claude — print the command instead | CLAUDE.md + this audit | `git-it` |
 
 ## Audit checklist (run these, cite evidence, report PASS/FAIL)
 
@@ -45,7 +47,13 @@ rules are enforced by three layers — know which is which:
    (+ config/log), no per-epoch `*_score.pkl`/`*_each_class_acc.csv` bloat;
    deliverable model folders self-contained.
 5. **Secrets** — no credentials in tracked files; `wandb/` gitignored.
-6. **Skill coverage** — for each skill in `~/.claude/skills/`, if its trigger
+6. **Commit hygiene** — do commits made this session use a one-line
+   `<prefix> <description>` subject drawn from the eight types (`add`, `bug`,
+   `minor`, `refactor`, `docs`, `test`, `config`, `remove`)? Verify no commit
+   carries a `Co-Authored-By:`, `Claude-Session:` or "Generated with" trailer:
+   `git log --format='%H %s%n%b' origin/HEAD..HEAD | grep -niE 'co-authored|claude-session|generated with'`
+   must return nothing. Verify nothing was pushed by Claude — the user pushes.
+7. **Skill coverage** — for each skill in `~/.claude/skills/`, if its trigger
    occurred, confirm it was applied; flag any that should have fired.
 
 ## How to run
