@@ -6,7 +6,7 @@
 #     ~/.claude/skills/<name>/SKILL.md      (personal — every project, every session)
 #     <repo>/.claude/skills/<name>/SKILL.md (project  — that repo only)
 #
-# It does NOT recurse, so the nested layout in this repo (skills/, vendor/*/skills/
+# It does NOT recurse, so the nested layout in this repo (skills/, third_party/*/skills/
 # engineering/…) is invisible to it. This script bridges that gap.
 #
 # Usage:
@@ -29,10 +29,10 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # ---------------------------------------------------------------------------
 SETS=(
   "private:$REPO/skills/*"
-  "mattpocock:$REPO/vendor/mattpocock-skills/skills/engineering/*"
-  "mattpocock:$REPO/vendor/mattpocock-skills/skills/productivity/*"
-  "research:$REPO/vendor/research-skills/plugins/research-collaborator/skills/*"
-  "research:$REPO/vendor/research-skills/plugins/results-to-slides/skills/*"
+  "mattpocock:$REPO/third_party/mattpocock-skills/skills/engineering/*"
+  "mattpocock:$REPO/third_party/mattpocock-skills/skills/productivity/*"
+  "research:$REPO/third_party/research-skills/plugins/research-collaborator/skills/*"
+  "research:$REPO/third_party/research-skills/plugins/results-to-slides/skills/*"
 )
 
 # Skills to leave out. Add or remove a line and re-run.
@@ -41,7 +41,7 @@ SKIP=(
 )
 
 # Sets are applied in order; on a name clash the FIRST set wins, so your own
-# skills always beat a vendored one. Clashes are reported, never silent.
+# skills always beat a third-party one. Clashes are reported, never silent.
 # ---------------------------------------------------------------------------
 
 MODE=link

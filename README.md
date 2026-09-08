@@ -7,8 +7,8 @@ Combines three sources:
 | Set | Source | Contents |
 |---|---|---|
 | `skills/` | mine | 7 private skills — Python/ML workflow (ruff, mypy, wandb, project init, graphify, git-it, the standing-rules auditor) |
-| `vendor/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
-| `vendor/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
+| `third_party/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
+| `third_party/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
 
 Plus `rules/CLAUDE.md` — standing rules that must hold on every turn, not just
 when a skill is invoked.
@@ -44,7 +44,7 @@ Claude Code discovers skills **exactly one level deep**:
 <repo>/.claude/skills/<name>/SKILL.md   project  — that repo only
 ```
 
-It does not recurse. The nested layout here (`vendor/mattpocock-skills/skills/engineering/tdd/`)
+It does not recurse. The nested layout here (`third_party/mattpocock-skills/skills/engineering/tdd/`)
 is invisible to it, so `install.sh` flattens every leaf skill into `~/.claude/skills/`
 as a symlink back into this repo.
 
@@ -160,7 +160,7 @@ Skip the symlink with `./install.sh --no-rules`. An existing non-symlink
 Both lists live at the top of `install.sh`:
 
 - **`SETS`** — which directories are scanned. Applied in order; on a name clash the
-  first set wins, so `skills/` always beats a vendored skill. Clashes are reported,
+  first set wins, so `skills/` always beats a third-party skill. Clashes are reported,
   never silent.
 - **`SKIP`** — skills to leave out. Currently `code-review`, because Matt's version
   would shadow Claude Code's built-in `/code-review` (which has `ultra` mode).
