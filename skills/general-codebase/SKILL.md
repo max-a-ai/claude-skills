@@ -31,8 +31,8 @@ rules are enforced by three layers — know which is which:
 | Before training | every `main.py` training run passes `--wandb-project`/`--wandb-name` | **PreToolUse hook** `enforce_wandb_training.sh` ✅ live | `wandb-training` |
 | Single-frame trainings | log/checkpoint + eval every epoch (`save_interval: 1`, `eval_every_epoch: true`); sequential runs keep their cadence | configs | `wandb-training` |
 | Before "done" | run this audit after code/config changes | **Stop hook** `audit_gate.sh` ✅ live | this skill |
-| Any commit | one-line `<prefix> <description>`, no Claude attribution | CLAUDE.md + this audit | `git-it` |
-| Any push | the user pushes, never Claude — print the command instead | CLAUDE.md + this audit | `git-it` |
+| Any commit | one-line `<prefix> <description>`, no Claude attribution, author = user | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
+| Any push | the user pushes, never Claude — print the command instead | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
 
 ## Audit checklist (run these, cite evidence, report PASS/FAIL)
 
@@ -74,6 +74,7 @@ rules are enforced by three layers — know which is which:
    carries a `Co-Authored-By:`, `Claude-Session:` or "Generated with" trailer:
    `git log --format='%H %s%n%b' origin/HEAD..HEAD | grep -niE 'co-authored|claude-session|generated with'`
    must return nothing. Verify nothing was pushed by Claude — the user pushes.
+   Confirm `git_guard.sh` is wired as a PreToolUse Bash hook in `~/.claude/settings.json`.
 7. **Skill coverage** — for each skill in `~/.claude/skills/`, if its trigger
    occurred, confirm it was applied; flag any that should have fired.
 

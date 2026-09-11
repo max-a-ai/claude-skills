@@ -240,6 +240,13 @@ Summary:
 
 ## Safety rules (apply to all flows)
 
+These rules are enforced by the `git_guard.sh` PreToolUse hook
+(`~/.claude/hooks/git_guard.sh`, wired in `~/.claude/settings.json`): every
+`git push` and every non-conforming `git commit` is refused with exit 2 before it
+runs, whether or not this skill was invoked. The hook has no escape hatch on
+purpose. If it blocks you, fix the command; never work around it (no `--no-verify`,
+no wrapper scripts, no `sh -c`).
+
 - **Never run `git push`** in any form — plain, `-u`, `--force`, `--force-with-lease`,
   or tags. The user pushes. Print the command instead, always.
 - Never run `git commit --amend` on a commit that is already pushed without saying
