@@ -15,5 +15,13 @@ build/
 .idea/
 .vscode/
 
+# data-management (machine-dependent, never committed)
+data/
+checkpoints/
+outputs/
+
+# NOTE: .docs/ is deliberately NOT ignored -- it is the record of
+# the work (progress.md, figures, promoted runs).
+
 # OS
 .DS_Store

@@ -24,6 +24,9 @@ rules are enforced by three layers — know which is which:
 | Stage | Rule | Enforced by | Owning skill |
 |-------|------|-------------|--------------|
 | New Python repo | Scaffold with the project initializer (UV + ruff + mypy strict, etc.) before writing code | CLAUDE.md + this audit | `python-project-init` |
+| Any repo | Layout matches the canonical tree: `src/<module>/`, `.docs/`, `config-global.json`, gitignored `data/`+`checkpoints/`+`outputs/` | this audit | `general-codebase-structure` |
+| Any repo | `.docs/progress.md` exists, is committed, and its gantt sections match its `# Log` and `# Todos` headings | this audit | `general-codebase-structure` |
+| Data on a cluster | NAS stays static; workspaces hold `.tar.zst` shards only; no `.venv` inside a workspace | this audit | `data-management` |
 | Writing Python | ruff autofix on every edit; mypy must pass in repos that declare a mypy config | **PostToolUse hook** `lint_type_gate.sh` ✅ live | `ruff-sweep`, `mypy-sweep` |
 | Before training | every `main.py` training run passes `--wandb-project`/`--wandb-name` | **PreToolUse hook** `enforce_wandb_training.sh` ✅ live | `wandb-training` |
 | Single-frame trainings | log/checkpoint + eval every epoch (`save_interval: 1`, `eval_every_epoch: true`); sequential runs keep their cadence | configs | `wandb-training` |
@@ -52,7 +55,18 @@ rules are enforced by three layers — know which is which:
    PreToolUse hook still wired; no wandb key hardcoded (auth via `~/.netrc`).
 4. **Artifact hygiene** — finished+packaged runs trimmed to best+final checkpoint
    (+ config/log), no per-epoch `*_score.pkl`/`*_each_class_acc.csv` bloat;
-   deliverable model folders self-contained.
+   deliverable model folders self-contained. Every run lives in
+   `outputs/<run-name>/`; runs worth keeping are *copied* into
+   `.docs/runs/<run-name>/`, never moved.
+4b. **Repo layout** — run the [[general-codebase-structure]] audit checklist.
+   It owns the tree, `config-global.json` and `progress.md`; do not re-derive
+   those rules here.
+4c. **Data + environment** — on Helma/Alex: `data/` holds only `.tar.zst`
+   shards, `checkpoints/` holds real files (not symlinks), and there is **no
+   `.venv` under `/hnvme/workspace` or `/anvme/workspace`** (it would eat the
+   per-user inode quota). Verify with `python3 scripts/dm_link.py --check`
+   and `find <workspace> -maxdepth 3 -name .venv`. Owning skill:
+   [[data-management]].
 5. **Secrets** — no credentials in tracked files; `wandb/` gitignored.
 6. **Commit hygiene** — do commits made this session use a one-line
    `<prefix> <description>` subject drawn from the eight types (`add`, `bug`,

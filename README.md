@@ -6,7 +6,7 @@ Combines three sources:
 
 | Set | Source | Contents |
 |---|---|---|
-| `skills/` | mine | 7 private skills — Python/ML workflow (ruff, mypy, wandb, project init, graphify, git-it, the standing-rules auditor) |
+| `skills/` | mine | 10 private skills — Python/ML workflow (ruff, mypy, wandb, project init, repo layout, HPC data management, graphify, git-it, the standing-rules auditor) |
 | `third_party/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
 | `third_party/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
 
@@ -24,7 +24,7 @@ That is the whole setup, on any machine. It installs three things into `~/.claud
 
 | | |
 |---|---|
-| `~/.claude/skills/` | 33 skills, symlinked back here |
+| `~/.claude/skills/` | 36 skills, symlinked back here |
 | `~/.claude/CLAUDE.md` | standing rules, symlinked to `rules/CLAUDE.md` |
 | `~/.claude/hooks/` + `hooks` entries in `settings.json` | the three enforcement hooks |
 
@@ -128,6 +128,29 @@ To get a *new* project set up with the matching config (uv, src layout, ruff at
 line-length 79, mypy strict), run the `python-project-init` skill in it. The
 `pyproject.toml` it writes **is** committed to that project — it is the project's
 own config, not skill content.
+
+## Repo layout and research data
+
+Three private skills form a chain, split so that the rules have exactly one home:
+
+| Skill | Role |
+|---|---|
+| `general-codebase-structure` | **the contract** — the canonical tree (`src/<module>/`, `.docs/`, `config-global.json`, gitignored `data/`+`checkpoints/`+`outputs/`) and the audit that checks a repo against it |
+| `python-project-init` | **the scaffolder** — writes what the contract defines |
+| `data-management` | **the data** — moves datasets and checkpoints onto NHR@FAU's Helma/Alex workspaces, and materialises `data/` differently on each machine |
+
+`general-codebase` calls the structure audit alongside ruff, mypy and wandb, so
+layout drift fails the same gate as a type error.
+
+`data-management` exists because the NVMe Lustre workspaces on Helma and Alex
+are limited by **inodes, not volume** (~50k soft / 75k hard per user, across all
+workspaces). An unpacked image dataset blows that on its own, so the NAS stays
+the single unpacked source of truth and the cluster only ever sees `.tar.zst`
+shards that a job unpacks into `$TMPDIR`. Its `scripts/` are copied into each
+project, not symlinked, so the version used for a run is committed beside it.
+
+`obsidian-canvas` is a deliberate placeholder (`disable-model-invocation: true`)
+holding the canvas template that `python-project-init` used to generate.
 
 ## Standing rules
 

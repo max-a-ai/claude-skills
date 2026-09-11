@@ -19,5 +19,12 @@ uv run mypy src/
 
 ## Layout
 
-See [HANDOFF.md](HANDOFF.md) for the full picture. Live dashboard:
-open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` in Obsidian.
+See [HANDOFF.md](HANDOFF.md) for the full picture, and
+[.docs/progress.md](.docs/progress.md) for the timetable, log and todos.
+
+`data/`, `checkpoints/` and `outputs/` are gitignored and machine-dependent.
+Build them for this machine with:
+
+```bash
+python3 scripts/dm_link.py --smoke
+```

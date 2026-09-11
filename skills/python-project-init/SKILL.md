@@ -1,13 +1,17 @@
 ---
 name: python-project-init
-description: Scaffold a new Python project with UV + hatchling + ruff/mypy (strict) + Obsidian vault (canvas/progress/todo) + HANDOFF.md. Use when the user says "new python project", "init python project X", "scaffold a python project", "start a python project from scratch", or similar.
+description: Scaffold a new Python project with UV + hatchling + ruff/mypy (strict) + the .docs/ tree + config-global.json + HANDOFF.md. Use when the user says "new python project", "init python project X", "scaffold a python project", "start a python project from scratch", or similar.
 ---
 
 # python-project-init
 
 Scaffold a slim, strictly-typed Python project with the user's standard
-workflow: UV, src layout, ruff/mypy, and a `.vault-<name>/` dashboard
-(Obsidian canvas + progress log + todo).
+workflow: UV, src layout, ruff/mypy, and the `.docs/` documentation tree.
+
+**This skill is the scaffolder; [[general-codebase-structure]] is the
+contract.** It defines the tree, `config-global.json` and the shape of
+`progress.md`. If the two disagree, that skill wins and this one is wrong —
+read it before changing anything here.
 
 ## Invariant defaults
 
@@ -39,18 +43,32 @@ workflow: UV, src layout, ruff/mypy, and a `.vault-<name>/` dashboard
 7. **Create `src/<module>/__main__.py`** that imports and calls `main`
    from `<module>.app` — but only if the user wants an `app.py` entry.
    For a library, skip this and remove the `[project.scripts]` block.
-8. **Create `.vault-<name>/` with three files:**
-   - `<name>.canvas` from [templates/canvas.json.tmpl](templates/canvas.json.tmpl).
-     **Critical:** every node and edge MUST include `"styleAttributes": {}`
-     or Obsidian ≥1.5 silently fails to render the canvas. This is the
-     most common gotcha — double-check after generation.
-   - `progress.md` from [templates/progress.md.tmpl](templates/progress.md.tmpl).
-   - `todo.md` from [templates/todo.md.tmpl](templates/todo.md.tmpl).
+8. **Create the `.docs/` tree** — the whole documentation tree, committed:
+   - `.docs/progress.md` from
+     [../general-codebase-structure/templates/progress.md.tmpl](../general-codebase-structure/templates/progress.md.tmpl).
+     One file: gantt timetable at the top, `# Log` in the middle, `# Todos`
+     at the bottom, all three using the **same section names**. It replaces
+     the old `progress.md` + `todo.md` pair.
+   - `.docs/figures/`, `.docs/latex-draft/`, `.docs/runs/` — created empty
+     (with a `.gitkeep` so they survive a clone).
+   - No Obsidian canvas: deferred to [[obsidian-canvas]], which is a
+     placeholder.
+
+8b. **Create `config-global.json`** from
+   [../general-codebase-structure/templates/config-global.json.tmpl](../general-codebase-structure/templates/config-global.json.tmpl),
+   substituting `{{PROJECT_NAME}}`. Leave the `_example_` entries in place as
+   documentation — [[data-management]] skips `_`-prefixed keys.
+
+8c. **Create the remaining directories:** `configs/`, `scripts/`, `slurm/`,
+   `tests/`, `third_party/`, and the gitignored `data/`, `checkpoints/`,
+   `outputs/`.
 9. **Create `instructions.md`** from [templates/instructions.md](templates/instructions.md)
    — the canonical coding standards, referenced by HANDOFF and agents.
 10. **Create `HANDOFF.md`** from [templates/HANDOFF.md.tmpl](templates/HANDOFF.md.tmpl)
     with today's date (`date +%Y-%m-%d`) and the project name.
 11. **Create `.gitignore`** from [templates/gitignore](templates/gitignore).
+    It must ignore `data/`, `checkpoints/`, `outputs/` and must NOT ignore
+    `.docs/`.
 12. **Create `README.md`** from [templates/README.md.tmpl](templates/README.md.tmpl).
 13. **Sync and verify:**
     ```bash
@@ -61,19 +79,23 @@ workflow: UV, src layout, ruff/mypy, and a `.vault-<name>/` dashboard
     ```
     All three must return zero errors. Fix any issues before reporting done.
 14. **Offer `git init`** if the directory isn't already a repo.
-15. **Report** to the user: project tree (top-level only), Python version
-    chosen, and a one-liner on how to open the canvas in Obsidian.
+15. **Verify the layout** by running the [[general-codebase-structure]]
+    audit checklist against the fresh repo. It must pass before reporting
+    done.
+16. **Report** to the user: project tree (top-level only), Python version
+    chosen, and where `.docs/progress.md` lives.
 
 ## Cautions
 
 - **Don't promote project-specific choices into the template.** GUI
   toolkits (Tkinter, PyQt), specific integrations (ROS2), hardware
   notes — those belong in the per-project HANDOFF, never in this skill.
-- **Dot-prefixed vault dir** (`.vault-<name>/`) may be hidden by Obsidian
-  by default. Note this in the HANDOFF so the user can toggle "Show hidden
-  files" in Obsidian if needed. Do NOT rename to `vault-<name>/` without
-  asking — the leading dot keeps it out of most file browsers, which the
-  user has adopted as convention.
+- **`.docs/` is dot-prefixed** and may be hidden by Obsidian and by file
+  browsers. Note this in the HANDOFF so the user can toggle "Show hidden
+  files". Do NOT rename it to `docs/` — the leading dot is the convention,
+  and [[general-codebase-structure]] audits for exactly this name.
+- **`.docs/` is never gitignored.** `data/`, `checkpoints/` and `outputs/`
+  always are. Getting this backwards loses the record of the work.
 - **Don't hardcode author name/email.** `uv init` populates these from
   `git config`. If overwriting `pyproject.toml`, preserve the authors
   block UV generated.

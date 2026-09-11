@@ -1,0 +1,63 @@
+# {{PROJECT_NAME}}
+
+**Now:** (one line — which section is active and what is blocking.)
+
+```mermaid
+gantt
+    title {{PROJECT_NAME}}
+    dateFormat  YYYY-MM-DD
+    axisFormat  %m-%d
+    section Scaffold
+    repo + env + config-global    :done, s1, {{TODAY}}, 1d
+    section Data
+    pack + push datasets          :active, d1, {{TODAY}}, 3d
+    section Training
+    (first experiment)            :t1, after d1, 7d
+    section Writing
+    (paper draft)                 :w1, after t1, 14d
+```
+
+The `section` names above are the vocabulary for this whole file. Every
+section has a matching `##` heading under `# Log` and under `# Todos`.
+
+---
+
+# Log
+
+Newest first. Each entry: `### YYYY-MM-DD HH:MM — <what> (<commit>)`.
+
+## Scaffold
+
+### {{TODAY}} 00:00 — Initial scaffold (`{{COMMIT}}`)
+- Python {{PYTHON_VERSION}}, uv, hatchling, ruff 79 cols, mypy strict.
+- `src/{{MODULE_NAME}}/` layout, `.docs/` documentation tree.
+- `config-global.json` created, no datasets declared yet.
+
+## Data
+
+## Training
+
+## Writing
+
+---
+
+# Todos
+
+Grouped by the same sections, so there is always a ripe task under the
+active block.
+
+## Scaffold
+
+- [ ] fill in the project goal in `HANDOFF.md`
+
+## Data
+
+- [ ] declare datasets in `config-global.json`
+- [ ] `python scripts/dm_pack.py <dataset>` on the NAS
+- [ ] `./scripts/dm_push.sh <dataset> helma`
+
+## Training
+
+- [ ] smoke run: `DATA_ROOT=data/_smoke`, three metrics converge
+
+## Writing

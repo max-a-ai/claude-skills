@@ -32,6 +32,7 @@ Next up: (replace with the first feature to implement).
 | Project layout | **src layout** | `src/{{MODULE_NAME}}/` |
 | Linter / formatter | **Ruff** (79 cols) | |
 | Type checker | **mypy** (strict) | |
+| Repo layout | **general-codebase-structure** | one tree, audited |
 
 (Add rows as decisions accumulate. Every new runtime dep needs a row.)
 
@@ -41,15 +42,22 @@ Next up: (replace with the first feature to implement).
 
 ```
 {{PROJECT_NAME}}/
-├── .vault-{{PROJECT_NAME}}/
-│   ├── {{PROJECT_NAME}}.canvas  # Obsidian canvas — live project dashboard
-│   ├── progress.md              # Mermaid Gantt + chronological log
-│   └── todo.md                  # Open tasks
-├── src/
-│   └── {{MODULE_NAME}}/
-│       ├── __init__.py
-│       └── __main__.py
-├── instructions.md              # Agent coding standards
+├── config-global.json           # datasets, checkpoints, methods, smoke
+├── src/{{MODULE_NAME}}/         # all main code
+├── third_party/                 # methods from config-global.json
+├── configs/                     # experiment yaml
+├── scripts/                     # dm_pack.py, dm_push.sh, dm_status.sh, ...
+├── slurm/                       # sbatch job scripts
+├── tests/
+├── data/          ┐
+├── checkpoints/   ├─ gitignored, machine-dependent, built by dm_link.py
+├── outputs/       ┘ one directory per run: outputs/<run-name>/
+├── .docs/
+│   ├── progress.md              # timetable + log + todos — committed
+│   ├── figures/
+│   ├── latex-draft/
+│   └── runs/<run-name>/         # promoted keepers — committed
+├── instructions.md              # agent coding standards
 ├── pyproject.toml
 ├── .python-version
 ├── README.md
@@ -57,26 +65,28 @@ Next up: (replace with the first feature to implement).
 └── HANDOFF.md                   # this file
 ```
 
-### Vault
+Layout owned by `general-codebase-structure`; `data/`, `checkpoints/` and
+`outputs/` are materialised per machine by `data-management`.
 
-Open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` in Obsidian for a
-live dashboard of the project. Green nodes = done, red = open.
+### .docs/
 
-If Obsidian doesn't show the `.vault-<name>/` directory (it's dot-prefixed
-and hidden by default in some configs), enable "Show hidden files" or
-open the canvas directly via its file path.
+`.docs/progress.md` is the single source of truth: a gantt timetable at the
+top, a dated log in the middle, todos at the bottom — all three sharing the
+same section names. Everything else in `.docs/` supports it.
+
+`.docs/` is dot-prefixed and hidden by default in Obsidian and most file
+browsers; enable "Show hidden files" to see it.
 
 ---
 
 ## For the Next Handoff
 
 1. Read this file top-to-bottom.
-2. Open `.vault-{{PROJECT_NAME}}/{{PROJECT_NAME}}.canvas` for the visual
-   index.
+2. Read `.docs/progress.md` — timetable, log, and the open todos.
 3. Read `instructions.md` for coding standards (enforced by ruff + mypy).
-4. Check `.vault-{{PROJECT_NAME}}/todo.md` for current backlog.
-5. Check `.vault-{{PROJECT_NAME}}/progress.md` for the chronological log.
-6. Run `uv sync` to reproduce the env.
-7. When you finish a session, append to `progress.md`, prune `todo.md`,
-   and update this file if you learned something future-you would need
-   to pick up cold.
+4. Run `uv sync` to reproduce the env.
+5. Run `python3 scripts/dm_link.py --check` to confirm this machine's
+   `data/` and `checkpoints/` are wired up.
+6. When you finish a session, append a dated entry under the right `# Log`
+   section of `.docs/progress.md`, prune its `# Todos`, and update this
+   file if you learned something future-you would need to pick up cold.

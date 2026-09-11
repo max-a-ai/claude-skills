@@ -1,0 +1,48 @@
+{
+  "repo": "{{PROJECT_NAME}}",
+
+  "workspaces": {
+    "helma": "{{PROJECT_NAME}}",
+    "alex": "{{PROJECT_NAME}}"
+  },
+
+  "machines": {
+    "_comment": "hostname -> role. Roles: workstation | lab | helma | alex. Only needed for hosts that autodetection cannot place (i.e. cluster1/cluster2). Override anywhere with DM_MACHINE=<role>.",
+    "cluster1": "lab",
+    "cluster2": "lab"
+  },
+
+  "nas_root": "~/nas_drive",
+
+  "datasets": {
+    "_example_waymo_pose_complete": {
+      "nas": "publicdatasets/WaymoPerception/waymo_pose_complete",
+      "shards": 24,
+      "kind": "real"
+    }
+  },
+
+  "checkpoints": {
+    "_example_hmr_pretrain": {
+      "nas": "methods/{{PROJECT_NAME}}/epoch=35-step=1000000.ckpt",
+      "_as": "optional: local filename under checkpoints/, defaults to the NAS basename"
+    }
+  },
+
+  "methods": {
+    "_example_tokenhmr": {
+      "git": "https://github.com/saidwivedi/TokenHMR.git",
+      "ref": "main",
+      "mode": "submodule"
+    }
+  },
+
+  "smoke": {
+    "total": 200,
+    "mix": {
+      "_example_synthetic_dataset": 0.9,
+      "_example_waymo_pose_complete": 0.05,
+      "_example_sloper": 0.05
+    }
+  }
+}
