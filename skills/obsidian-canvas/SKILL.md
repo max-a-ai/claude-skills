@@ -1,35 +1,26 @@
 ---
 name: obsidian-canvas
 description: >
-  PLACEHOLDER — not in use. Reserved for generating an Obsidian canvas
-  dashboard from a repo's progress.md. Does nothing today; do not invoke.
+  PLACEHOLDER, not in use. Reserved for generating an Obsidian canvas
+  dashboard from a repo's .docs/progress.md.
 disable-model-invocation: true
 ---
 
 # obsidian-canvas
 
-**Deliberately empty.** Reserved so the idea has a home and a name; nothing
-here is wired up yet. `disable-model-invocation: true` keeps it from firing
-by accident — it can only be invoked by hand.
-
-## Why it exists
+Reserved so the idea keeps a name and its one hard-won detail. Nothing is
+wired up.
 
 [[python-project-init]] used to generate an Obsidian `.canvas` dashboard in
-every new project. The canvas did not hold up in practice, so it was removed
-from the scaffold. It may still be a good asset later, driven off the gantt
-sections in `.docs/progress.md` rather than maintained by hand.
-
-## What is already known
+every new project. It did not hold up in practice and was dropped from the
+scaffold. It may return, driven off the gantt sections in
+`.docs/progress.md` rather than maintained by hand.
 
 [templates/canvas.json.tmpl](templates/canvas.json.tmpl) is the working
-template, kept verbatim.
+template, kept verbatim. **Every node *and* every edge must carry
+`"styleAttributes": {}`** — without it Obsidian >= 1.5 renders a blank page
+and reports no error.
 
-**The one hard-won gotcha:** every node *and* every edge must include
-`"styleAttributes": {}` or Obsidian >= 1.5 silently fails to render the
-canvas — no error, just a blank page.
-
-## If this is ever picked up
-
-Sections in `.docs/progress.md` are the natural node set, and its `# Todos`
-entries the natural leaves. Ask for input before generating; do not invent a
-layout convention silently.
+If this is ever picked up: `.docs/progress.md` sections are the natural
+nodes, its `# Todos` the natural leaves. Ask for the layout convention
+rather than inventing one.

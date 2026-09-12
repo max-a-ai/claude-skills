@@ -43,25 +43,17 @@ read it before changing anything here.
 7. **Create `src/<module>/__main__.py`** that imports and calls `main`
    from `<module>.app` — but only if the user wants an `app.py` entry.
    For a library, skip this and remove the `[project.scripts]` block.
-8. **Create the `.docs/` tree** — the whole documentation tree, committed:
+8. **Build the tree defined by [[general-codebase-structure]]** — read it
+   for the layout; this step only says where the files come from.
    - `.docs/progress.md` from
      [../general-codebase-structure/templates/progress.md.tmpl](../general-codebase-structure/templates/progress.md.tmpl).
-     One file: gantt timetable at the top, `# Log` in the middle, `# Todos`
-     at the bottom, all three using the **same section names**. It replaces
-     the old `progress.md` + `todo.md` pair.
-   - `.docs/figures/`, `.docs/latex-draft/`, `.docs/runs/` — created empty
-     (with a `.gitkeep` so they survive a clone).
-   - No Obsidian canvas: deferred to [[obsidian-canvas]], which is a
-     placeholder.
-
-8b. **Create `config-global.json`** from
-   [../general-codebase-structure/templates/config-global.json.tmpl](../general-codebase-structure/templates/config-global.json.tmpl),
-   substituting `{{PROJECT_NAME}}`. Leave the `_example_` entries in place as
-   documentation — [[data-management]] skips `_`-prefixed keys.
-
-8c. **Create the remaining directories:** `configs/`, `scripts/`, `slurm/`,
-   `tests/`, `third_party/`, and the gitignored `data/`, `checkpoints/`,
-   `outputs/`.
+   - `config-global.json` from
+     [../general-codebase-structure/templates/config-global.json.tmpl](../general-codebase-structure/templates/config-global.json.tmpl),
+     substituting `{{PROJECT_NAME}}`. Keep the `_example_` entries as
+     documentation — [[data-management]] skips `_`-prefixed keys.
+   - Empty directories (`.gitkeep` so they survive a clone): `.docs/figures/`,
+     `.docs/latex-draft/`, `.docs/runs/`, `configs/`, `scripts/`, `slurm/`,
+     `tests/`, `third_party/`, `data/`, `checkpoints/`, `outputs/`.
 9. **Create `instructions.md`** from [templates/instructions.md](templates/instructions.md)
    — the canonical coding standards, referenced by HANDOFF and agents.
 10. **Create `HANDOFF.md`** from [templates/HANDOFF.md.tmpl](templates/HANDOFF.md.tmpl)
@@ -90,12 +82,11 @@ read it before changing anything here.
 - **Don't promote project-specific choices into the template.** GUI
   toolkits (Tkinter, PyQt), specific integrations (ROS2), hardware
   notes — those belong in the per-project HANDOFF, never in this skill.
-- **`.docs/` is dot-prefixed** and may be hidden by Obsidian and by file
-  browsers. Note this in the HANDOFF so the user can toggle "Show hidden
-  files". Do NOT rename it to `docs/` — the leading dot is the convention,
-  and [[general-codebase-structure]] audits for exactly this name.
-- **`.docs/` is never gitignored.** `data/`, `checkpoints/` and `outputs/`
-  always are. Getting this backwards loses the record of the work.
+- **`.docs/` is dot-prefixed**, so Obsidian and most file browsers hide it.
+  Note this in the HANDOFF so the user can toggle "Show hidden files". The
+  name is exact: [[general-codebase-structure]] audits for it.
+- **Commit `.docs/`; gitignore `data/`, `checkpoints/`, `outputs/`.**
+  Backwards, this loses the record of the work.
 - **Don't hardcode author name/email.** `uv init` populates these from
   `git config`. If overwriting `pyproject.toml`, preserve the authors
   block UV generated.

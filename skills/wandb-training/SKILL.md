@@ -46,26 +46,20 @@ plots when given `--wandb-project`.
 
 ## 2b. Run naming (this skill owns it)
 
-**One string, four places.** The same `<run-name>` is used for
-`--wandb-name`, the `outputs/<run-name>/` directory, the promoted
-`.docs/runs/<run-name>/` directory, and the row in `.docs/progress.md`'s
-timetable. That is what lets you go from a wandb curve to the checkpoint that
-produced it without guessing.
-
-Format — sortable, so `ls` and the wandb run list agree:
+**One string, four places:** `--wandb-name`, `outputs/<run-name>/`, the
+promoted `.docs/runs/<run-name>/`, and the timetable row in
+`.docs/progress.md`. That is what takes you from a wandb curve to the
+checkpoint that produced it without guessing.
 
 ```
 <YYYYMMDD>-<variant>-<key-hyperparams>
 20260911-2D-bs768-e400
 ```
 
-- date first, so runs sort chronologically
-- `<variant>` is the thing being tested (`2D`, `3D`, `seq`, `ablation-noaug`)
-- only the hyperparameters that actually differ from the config baseline
-- lowercase, hyphens, no spaces, no slashes (it becomes a directory name)
-
-[[general-codebase-structure]] references this convention; it does not define
-it. [[obsidian-canvas]] is a placeholder and defines nothing.
+Date first so runs sort chronologically and `ls` agrees with the wandb run
+list. `<variant>` is the thing being tested (`2D`, `seq`, `ablation-noaug`).
+Include only hyperparameters that differ from the config baseline. Lowercase
+and hyphens throughout — it becomes a directory name.
 
 ## 3. Queues / scripts
 Any batch/queue runner (e.g. `run_variants_queue.sh`) that calls `main.py` must
