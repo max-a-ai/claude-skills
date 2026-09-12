@@ -24,7 +24,7 @@ rules are enforced by three layers — know which is which:
 | Stage | Rule | Enforced by | Owning skill |
 |-------|------|-------------|--------------|
 | New Python repo | Scaffold with the project initializer (UV + ruff + mypy strict, etc.) before writing code | CLAUDE.md + this audit | `python-project-init` |
-| Any repo | Layout matches the canonical tree: `src/<module>/`, `.docs/`, `config-global.json`, gitignored `data/`+`checkpoints/`+`outputs/` | this audit | `general-codebase-structure` |
+| Any repo | Layout matches the canonical tree: flat `<module>/` package, `.docs/`, `config-global.json`, gitignored `resources/`+`outputs/` | this audit | `general-codebase-structure` |
 | Any repo | `.docs/progress.md` exists, is committed, and its gantt sections match its `# Log` and `# Todos` headings | this audit | `general-codebase-structure` |
 | Data on a cluster | NAS read-only; workspaces hold shards, code and outputs | this audit | `data-management` |
 | Writing Python | ruff autofix on every edit; mypy must pass in repos that declare a mypy config | **PostToolUse hook** `lint_type_gate.sh` ✅ live | `ruff-sweep`, `mypy-sweep` |
@@ -60,7 +60,7 @@ rules are enforced by three layers — know which is which:
    `.docs/runs/<run-name>/`, never moved.
 4b. **Repo layout** — run the [[general-codebase-structure]] audit, which
    owns the tree, `config-global.json` and `progress.md`.
-4c. **Data + environment** — `python3 scripts/dm_link.py --check` passes, and
+4c. **Data + environment** — `python3 <module>/scripts/dm_link.py --check` passes, and
    `find <workspace> -maxdepth 3 -name .venv` is empty. Rules and reasons:
    [[data-management]].
 5. **Secrets** — no credentials in tracked files; `wandb/` gitignored.

@@ -12,6 +12,7 @@ description: >
 **This skill is the contract, not the scaffolder.** It states the layout and
 audits a repo against it; [[python-project-init]] writes the files. When the
 two disagree, this skill wins and the initializer is the thing to fix.
+Reference implementation of the tree: `~/Documents/lidar-bedlam`.
 
 [[general-codebase]] runs the audit below alongside ruff, mypy and wandb.
 
@@ -22,25 +23,30 @@ two disagree, this skill wins and the initializer is the thing to fix.
 ├── pyproject.toml               uv + hatchling, ruff 79 cols, mypy strict
 ├── uv.lock
 ├── .python-version
-├── config-global.json           datasets, checkpoints, methods, smoke recipe
+├── config-global.json           hosts, datasets, checkpoints, methods, smoke
 ├── .gitignore
 ├── README.md
 ├── HANDOFF.md
 ├── instructions.md              coding standards
 │
-├── src/<module>/                ALL main code
+├── <module>/                    THE package: flat, named after the repo
+│   ├── data/  models/  losses/  metrics/  train/  utils/   mandatory subpackages
+│   ├── scripts/                 CLIs + dm_*.py/sh from [[data-management]]; no __init__.py
+│   ├── slurm/                   sbatch job scripts (only if a cluster is used)
+│   ├── <domain>/                project-specific subpackages, added as needed
+│   └── __init__.py  __main__.py  app.py  py.typed
 │
 ├── third_party/                 methods from config-global.json: submodule,
 │   └── <method>/                  clone, or symlink to an existing checkout
 │
 ├── configs/                     experiment yaml
-├── scripts/                     dm_pack.py, dm_push.sh, dm_status.sh, ...
-├── slurm/                       sbatch job scripts
+├── notebooks/                   capabilities notebook; *.executed.ipynb ignored
 ├── tests/
 │
-├── data/          ┐ gitignored, machine-dependent, built by [[data-management]]
-├── checkpoints/   ├─
-├── outputs/       ┘ one directory per run: outputs/<run-name>/
+├── resources/     ┐ gitignored, machine-dependent, built by [[data-management]]
+│   ├── data/      │   datasets (+ generated/ for derived data, _smoke/ subset)
+│   └── pretrained-checkpoints/
+├── outputs/       ┘ one directory per run: outputs/<run-name>/, plus logs/
 │
 └── .docs/
     ├── progress.md              COMMITTED — the single source of truth
@@ -51,12 +57,15 @@ two disagree, this skill wins and the initializer is the thing to fix.
 
 ### Rules the tree encodes
 
-1. **All code lives in `src/<module>/`** — never a package named after the
-   repo at the root, never loose `.py` beside `pyproject.toml`.
+1. **All code lives in `<module>/`** — one flat package named after the
+   repo (`-` → `_`), no `src/`, never loose `.py` beside `pyproject.toml`.
+   `scripts/` and `slurm/` are inside it; the top level holds only the
+   folders drawn above.
 2. **`.docs/` is the entire documentation tree.** One notes directory, named
    exactly that, dot-prefixed by convention.
-3. **`data/`, `checkpoints/` and `outputs/` are gitignored and always
-   present** — create them empty, so code has no reason to invent a fourth
+3. **`resources/` and `outputs/` are gitignored and always present** —
+   `resources/data/` and `resources/pretrained-checkpoints/` are built by
+   `dm_link.py`; create them empty so code has no reason to invent another
    name for the same idea.
 4. **`.docs/` stays committed.** It is the record of the work.
 5. **Every training run writes to `outputs/<run-name>/`.** A run worth
@@ -108,15 +117,17 @@ Give every line a verdict and cite the command output behind it. A line you
 could not check is N/A **with the reason** — never silently dropped. Report
 read-only unless asked to fix.
 
-1. **Code location** — `src/<module>/` exists; no repo-named package at the
-   root; no loose `*.py` beside `pyproject.toml`.
-2. **Directories** — `src/`, `configs/`, `scripts/`, `tests/`,
-   `third_party/`, `.docs/figures/`, `.docs/latex-draft/`, `.docs/runs/`
-   present. `slurm/` only if the repo runs on Helma/Alex.
-3. **Gitignore** — `git check-ignore -v` confirms `data/`, `checkpoints/`,
-   `outputs/` ignored and `.docs/` tracked.
+1. **Code location** — `<module>/` (repo name, `-` → `_`) exists at the
+   root with `__init__.py`; no `src/`; no loose `*.py` beside
+   `pyproject.toml`; nothing at the top level beyond the tree above.
+2. **Directories** — `<module>/{data,models,losses,metrics,train,utils,scripts}/`,
+   `configs/`, `notebooks/`, `tests/`, `third_party/`, `.docs/figures/`,
+   `.docs/latex-draft/`, `.docs/runs/` present. `<module>/slurm/` only if
+   the repo runs on Helma/Alex. `<module>/scripts/` has no `__init__.py`.
+3. **Gitignore** — `git check-ignore -v` confirms `resources/`, `outputs/`
+   and `notebooks/*.executed.ipynb` ignored and `.docs/` tracked.
 4. **config-global.json** — parses, and every entry resolves on this machine:
-   `python3 scripts/dm_link.py --check`.
+   `python3 <module>/scripts/dm_link.py --check`.
 5. **progress.md** — tracked by git, and its gantt sections match the `##`
    headings under `# Log` and `# Todos` exactly.
 6. **Runs** — every `.docs/runs/<run>/` has a timetable row; flag any

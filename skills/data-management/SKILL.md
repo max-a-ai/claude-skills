@@ -3,7 +3,7 @@ name: data-management
 description: >
   Training data, checkpoints and environments across the NAS, the lab boxes
   and the NHR clusters. Use when moving a dataset to Helma or Alex, packing a
-  dataset into shards, wiring up data/ on any machine, building a smoke
+  dataset into shards, wiring up resources/ on any machine, building a smoke
   subset, checking whether a workspace is about to expire, or when a job
   cannot find its data. Hard rule: the NAS is read-only, the clusters hold
   only shards.
@@ -24,11 +24,11 @@ at job start. Numbers, node specs, transfer rules and sources:
 
 | | workstation (`mbwm`) | `cluster1` / `cluster2` | Helma / Alex |
 |---|---|---|---|
-| `data/<ds>` | symlink → NAS | real copy | `.tar.zst` shards |
-| `checkpoints/` | symlink → NAS | symlink → NAS | real copy |
+| `resources/data/<ds>` | symlink → NAS | real copy | `.tar.zst` shards |
+| `resources/pretrained-checkpoints/` | symlink → NAS | symlink → NAS | real copy |
 | `outputs/` | real | real | real |
 | environment | uv `.venv` in repo | uv `.venv` in repo | `$HOME`, or Apptainer |
-| `data/_smoke/` | built | built | — (smoke runs are local) |
+| `resources/data/_smoke/` | built | built | — (smoke runs are local) |
 
 On Helma and Alex **the repo root is the workspace root** — clone into
 `$(ws_find <repo>)`. That keeps the tree identical everywhere, so moving a run
@@ -37,8 +37,9 @@ between machines changes only `DATA_ROOT`. The tree itself is owned by
 
 ## The scripts
 
-Copied into the repo's `scripts/`, so the version used for a run is committed
-beside it. Stdlib Python 3 and bash, because they run on login nodes with no
+Copied into the repo's `<module>/scripts/` (the only `scripts/` in the tree,
+see [[general-codebase-structure]]), so the version used for a run is committed
+beside it. They locate the repo root by walking up to `config-global.json`. Stdlib Python 3 and bash, because they run on login nodes with no
 venv. Each script's `--help` is the source of truth for its flags.
 
 | Script | Runs on | Does |
@@ -46,7 +47,7 @@ venv. Each script's `--help` is the source of truth for its flags.
 | `dm_status.sh` | Helma / Alex | days **and extensions** left, per workspace |
 | `dm_pack.py` | workstation | dataset → 24 `.tar.zst` shards + manifest + checksums |
 | `dm_push.sh` | workstation | rsync shards to a workspace, verify checksums remotely |
-| `dm_link.py` | any | materialise `data/`, `checkpoints/`, `outputs/`, `.gitignore`, smoke subset |
+| `dm_link.py` | any | materialise `resources/data/`, `resources/pretrained-checkpoints/`, `outputs/`, `.gitignore`, smoke subset |
 | `dm_alias.sh` | any | `cd<repo>` aliases as one rewritable block in `~/.bash_aliases` |
 
 ## Workspaces: check first, allocate never
@@ -87,14 +88,15 @@ real bug in the predecessor scripts:
 ## Smoke subsets
 
 A smoke run catches a broken loader in minutes. `dm_link.py --smoke` builds
-`data/_smoke/` from the `smoke` block of `config-global.json` — a
+`resources/data/_smoke/` from the `smoke` block of `config-global.json` — a
 deterministic every-*k*-th sample, symlinked.
 
 Default recipe: **90% synthetic, 10% real** (Waymo + SLOPER), reported as
 **one metric per source**. Three separate curves is the point: a blended
 metric hides the source whose loader broke.
 
-Flip `DATA_ROOT` between `data/` and `data/_smoke/`; nothing else changes.
+Flip `DATA_ROOT` between `resources/data/` and `resources/data/_smoke/`;
+nothing else changes.
 
 ## Environments
 
@@ -113,7 +115,7 @@ The shards extract in one step:
 
 ```bash
 STORAGE_DIR="$(ws_find <repo>)"
-find "$STORAGE_DIR/data/<dataset>" -name '*.tar.zst' \
+find "$STORAGE_DIR/resources/data/<dataset>" -name '*.tar.zst' \
   | xargs -P 24 -I{} tar -xf {} -C "$TMPDIR"
 export DATA_ROOT="$TMPDIR"
 ```

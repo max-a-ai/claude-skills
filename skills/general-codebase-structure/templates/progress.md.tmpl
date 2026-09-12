@@ -30,7 +30,7 @@ Newest first. Each entry: `### YYYY-MM-DD HH:MM — <what> (<commit>)`.
 
 ### {{TODAY}} 00:00 — Initial scaffold (`{{COMMIT}}`)
 - Python {{PYTHON_VERSION}}, uv, hatchling, ruff 79 cols, mypy strict.
-- `src/{{MODULE_NAME}}/` layout, `.docs/` documentation tree.
+- flat `{{MODULE_NAME}}/` package, `.docs/` documentation tree.
 - `config-global.json` created, no datasets declared yet.
 
 ## Data
@@ -53,11 +53,11 @@ active block.
 ## Data
 
 - [ ] declare datasets in `config-global.json`
-- [ ] `python scripts/dm_pack.py <dataset>` on the NAS
-- [ ] `./scripts/dm_push.sh <dataset> helma`
+- [ ] `python3 {{MODULE_NAME}}/scripts/dm_pack.py <dataset>` on the NAS
+- [ ] `{{MODULE_NAME}}/scripts/dm_push.sh <dataset> helma`
 
 ## Training
 
-- [ ] smoke run: `DATA_ROOT=data/_smoke`, three metrics converge
+- [ ] smoke run: `DATA_ROOT=resources/data/_smoke`, three metrics converge
 
 ## Writing

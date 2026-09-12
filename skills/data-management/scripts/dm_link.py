@@ -1,14 +1,16 @@
-"""Materialise data/, checkpoints/ and outputs/ for this machine.
+"""Materialise resources/ and outputs/ for this machine.
 
 The same committed config-global.json produces a different layout on
 every machine, so that only DATA_ROOT changes between a smoke run and a
 cluster run:
 
-    workstation  data/<ds>   -> symlink into the NAS
-    lab          data/<ds>   -> a real copy (cluster1 / cluster2)
-    helma, alex  data/<ds>/  -> the .tar.zst shards, never unpacked here
+    workstation  resources/data/<ds>   -> symlink into the NAS
+    lab          resources/data/<ds>   -> a real copy (cluster1 / cluster2)
+    helma, alex  resources/data/<ds>/  -> the .tar.zst shards, never unpacked
 
-    python3 scripts/dm_link.py [--check] [--smoke]
+Checkpoints go to resources/pretrained-checkpoints/<name>.
+
+    python3 <module>/scripts/dm_link.py [--check] [--smoke]
 """
 
 from __future__ import annotations
@@ -22,7 +24,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from dm_common import (  # noqa: E402
+    CKPT_DIR,
     CLUSTERS,
+    DATA_DIR,
     IGNORED_DIRS,
     ConfigError,
     dataset_source,
@@ -103,23 +107,23 @@ def build_smoke(root: Path, cfg: dict[str, object], check: bool) -> None:
         print("  --   no smoke.mix declared, skipping subset")
         return
     total = int(smoke.get("total", 200) or 200)
-    base = root / "data" / SMOKE
+    base = root / DATA_DIR / SMOKE
     if check:
         if base.is_dir():
-            print(f"  ok   data/{SMOKE} present")
+            print(f"  ok   {DATA_DIR}/{SMOKE} present")
         else:
-            fail("data/_smoke missing")
+            fail(f"{DATA_DIR}/{SMOKE} missing")
         return
     base.mkdir(parents=True, exist_ok=True)
     for dataset, share in mix.items():
-        source = root / "data" / dataset
+        source = root / DATA_DIR / dataset
         if not source.exists():
-            fail(f"smoke: data/{dataset} not materialised yet")
+            fail(f"smoke: {DATA_DIR}/{dataset} not materialised yet")
             continue
         wanted = max(1, round(total * float(share)))
         files = relative_files(source.resolve())
         if not files:
-            fail(f"smoke: data/{dataset} contains no files")
+            fail(f"smoke: {DATA_DIR}/{dataset} contains no files")
             continue
         step = max(1, len(files) // wanted)
         picked = files[::step][:wanted]
@@ -141,7 +145,7 @@ def ensure_gitignore(root: Path, check: bool) -> None:
     if ".docs/" in lines:
         fail(".docs/ is gitignored -- it must be committed")
     if not missing:
-        print("  ok   .gitignore covers data/, checkpoints/, outputs/")
+        print("  ok   .gitignore covers resources/, outputs/")
         return
     if check:
         fail(f".gitignore is missing: {', '.join(missing)}")
@@ -165,7 +169,7 @@ def main() -> int:
     parser.add_argument(
         "--smoke",
         action="store_true",
-        help="also (re)build the data/_smoke subset",
+        help=f"also (re)build the {DATA_DIR}/{SMOKE} subset",
     )
     args = parser.parse_args()
 
@@ -174,13 +178,13 @@ def main() -> int:
     role = detect_machine(cfg)
     print(f"repo {root}\nrole {role}\n")
 
-    for name in IGNORED_DIRS:
-        (root / name).mkdir(exist_ok=True)
+    for name in (*IGNORED_DIRS, DATA_DIR, CKPT_DIR):
+        (root / name).mkdir(parents=True, exist_ok=True)
     ensure_gitignore(root, args.check)
 
     print("datasets:")
     for dataset in entries(cfg.get("datasets")):
-        link = root / "data" / dataset
+        link = root / DATA_DIR / dataset
         if role == "workstation":
             ensure_symlink(link, dataset_source(cfg, dataset), args.check)
         elif role == "lab":
@@ -196,7 +200,7 @@ def main() -> int:
         # Default to the NAS basename so existing config paths keep
         # working; "as" overrides it when a stable local name is wanted.
         local = str(spec.get("as") or Path(nas_rel).name)
-        dest = root / "checkpoints" / local
+        dest = root / CKPT_DIR / local
         if role in CLUSTERS:
             if dest.is_symlink():
                 fail(

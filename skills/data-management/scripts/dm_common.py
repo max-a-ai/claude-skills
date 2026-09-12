@@ -16,7 +16,9 @@ from typing import Any
 
 ROLES = ("workstation", "lab", "helma", "alex")
 CLUSTERS = ("helma", "alex")
-IGNORED_DIRS = ("data", "checkpoints", "outputs")
+IGNORED_DIRS = ("resources", "outputs")
+DATA_DIR = "resources/data"
+CKPT_DIR = "resources/pretrained-checkpoints"
 
 
 class ConfigError(RuntimeError):

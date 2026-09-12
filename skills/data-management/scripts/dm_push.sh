@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Push a packed dataset to its workspace on Helma or Alex and verify it.
 #
-#   ./scripts/dm_push.sh <dataset> <helma|alex>
+#   <module>/scripts/dm_push.sh <dataset> <helma|alex>
 #
 # Runs from the workstation. The ssh aliases in ~/.ssh/config already
 # ProxyJump through csnhr.nhr.fau.de, so nothing extra is needed here.
@@ -17,7 +17,8 @@ case "$HOST" in
   *) echo "error: host must be helma or alex, got '$HOST'" >&2; exit 1 ;;
 esac
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# scripts/ sits inside the package, so the repo root is two levels up.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CFG="$ROOT/config-global.json"
 [[ -f "$CFG" ]] || { echo "error: no config-global.json at $ROOT" >&2; exit 1; }
 
@@ -49,7 +50,8 @@ if [[ -z "$WSPATH" ]]; then
   echo "    ws_allocate $WS 90 -r 7 -m <your-email>" >&2
   exit 1
 fi
-DEST="$WSPATH/data/$DATASET"
+# The repo root is the workspace root on the clusters, same tree everywhere.
+DEST="$WSPATH/resources/data/$DATASET"
 echo "destination: $HOST:$DEST"
 
 ssh "$HOST" "mkdir -p '$DEST'"

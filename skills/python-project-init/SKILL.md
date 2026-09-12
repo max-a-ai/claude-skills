@@ -10,6 +10,11 @@ workflow: UV, a flat package named after the repo, ruff/mypy, and the
 `.docs/` documentation tree. Reference implementation:
 `~/Documents/lidar-bedlam` (layout finalised 2026-09-12).
 
+The tree below is also stated, and audited, by [[general-codebase-structure]];
+the two must agree. The `dm_*` scripts and `config-global.json` template come
+from [[data-management]] and [[general-codebase-structure]], not from the
+reference repo.
+
 ## Invariant defaults
 
 - **Python: 3.13** (override to 3.12 on request for platform-constrained
@@ -125,12 +130,15 @@ third level (the modules inside `<module>/data/`, the contents of
    timetable at the top, `# Log` in the middle, `# Todos` at the bottom,
    all three using the **same section names**), `.docs/figures/`,
    `.docs/latex-draft/`, `.docs/runs/` with `.gitkeep`.
-8. **Create `config-global.json`** with `hosts`, `datasets`, `checkpoints`,
-   `methods`, `smoke` blocks and `_example_` entries as documentation
-   (keys starting with `_` are skipped), and `scripts/dm_link.py` that
-   materialises `resources/data/<name>`, `resources/pretrained-checkpoints/<name>`
-   and `outputs/` for the current host (`--check`, `--smoke`). Copy both
-   from the reference implementation and adapt the names.
+8. **Create `config-global.json`** from
+   [../general-codebase-structure/templates/config-global.json.tmpl](../general-codebase-structure/templates/config-global.json.tmpl),
+   substituting `{{PROJECT_NAME}}`. Keep the `_example_` entries as
+   documentation (keys starting with `_` are skipped). Then copy the
+   `dm_*` scripts from
+   [../data-management/scripts/](../data-management/scripts/) into
+   `<MODULE_NAME>/scripts/`; `dm_link.py` materialises
+   `resources/data/<name>`, `resources/pretrained-checkpoints/<name>` and
+   `outputs/` for the current host (`--check`, `--smoke`).
 9. **Create the remaining top-level folders:** `configs/`, `notebooks/`,
    `tests/`, `third_party/` (tracked, `.gitkeep`), and the gitignored
    `resources/`, `outputs/`.

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Add (or refresh) this repo's navigation aliases in ~/.bash_aliases.
 #
-#   ./scripts/dm_alias.sh
+#   <module>/scripts/dm_alias.sh
 #
 # Writes a single delimited block that is rewritten wholesale on every
 # run. Hand-written lines outside the block are never touched, and the
@@ -9,7 +9,8 @@
 # shell, so this never does a free-form in-place edit.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# scripts/ sits inside the package, so the repo root is two levels up.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CFG="$ROOT/config-global.json"
 [[ -f "$CFG" ]] || { echo "error: no config-global.json at $ROOT" >&2; exit 1; }
 

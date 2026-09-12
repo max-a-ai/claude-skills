@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Report the lifetime of every workspace and flag the ones running out.
 #
-#   ./scripts/dm_status.sh [pattern]
+#   <module>/scripts/dm_status.sh [pattern]
 #
 # Run this FIRST, before any other data-management action. A workspace is
 # deleted when its time runs out, and extensions are finite -- when they

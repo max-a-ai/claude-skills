@@ -5,7 +5,7 @@ sees these shards. Re-running repacks *only* the shards whose contents
 changed, because every file is assigned to a shard by a hash of its
 relative path -- adding files never reshuffles the others.
 
-    python3 scripts/dm_pack.py <dataset> [--all] [--allow-deletions]
+    python3 <module>/scripts/dm_pack.py <dataset> [--all] [--allow-deletions]
 
 Must run where the NAS is mounted (the workstation).
 """
