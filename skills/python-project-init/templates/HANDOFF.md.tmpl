@@ -6,11 +6,12 @@ Generated: {{TODAY}}
 
 ## Status Snapshot
 
-Scaffold in place. Runs under `uv sync`. All three quality gates pass:
+Scaffold in place. Runs under `uv sync`. All quality gates pass:
 
-- `uv run ruff check src/`
-- `uv run ruff format --check src/`
-- `uv run mypy src/` (strict)
+- `uv run ruff check .`
+- `uv run ruff format --check .`
+- `uv run mypy` (strict)
+- `uv run pytest`
 
 Next up: (replace with the first feature to implement).
 
@@ -29,44 +30,44 @@ Next up: (replace with the first feature to implement).
 | Python version | **{{PYTHON_VERSION}}** | (constraint or default) |
 | Package manager | **UV** | Reproducibility. `uv sync`, `uv run`. |
 | Build backend | **hatchling** | Stable, well-documented. |
-| Project layout | **src layout** | `src/{{MODULE_NAME}}/` |
-| Linter / formatter | **Ruff** (79 cols) | |
-| Type checker | **mypy** (strict) | |
-| Repo layout | **general-codebase-structure** | one tree, audited |
+| Project layout | **flat**: `{{PROJECT_NAME}}/{{MODULE_NAME}}/` | one folder named after the repo; `scripts/` and `slurm/` inside the package |
+| Linter / formatter | **Ruff** (79 cols) | excludes `third_party/`, `notebooks/`, `resources/`, `outputs/` |
+| Type checker | **mypy** (strict) on `{{MODULE_NAME}}/ tests/` | |
+| Repo layout | **python-project-init** contract | one tree, audited |
 
 (Add rows as decisions accumulate. Every new runtime dep needs a row.)
 
 ---
 
-## Repository Structure
+## Repository Structure (`tree -L 2 -a`, gitignored folders marked)
 
 ```
 {{PROJECT_NAME}}/
-├── config-global.json           # datasets, checkpoints, methods, smoke
-├── src/{{MODULE_NAME}}/         # all main code
-├── third_party/                 # methods from config-global.json
-├── configs/                     # experiment yaml
-├── scripts/                     # dm_pack.py, dm_push.sh, dm_status.sh, ...
-├── slurm/                       # sbatch job scripts
-├── tests/
-├── data/          ┐
-├── checkpoints/   ├─ gitignored, machine-dependent, built by dm_link.py
-├── outputs/       ┘ one directory per run: outputs/<run-name>/
-├── .docs/
-│   ├── progress.md              # timetable + log + todos — committed
-│   ├── figures/
-│   ├── latex-draft/
-│   └── runs/<run-name>/         # promoted keepers — committed
-├── instructions.md              # agent coding standards
-├── pyproject.toml
-├── .python-version
-├── README.md
-├── .gitignore
-└── HANDOFF.md                   # this file
+├── {{MODULE_NAME}}/         # THE package, flat layout, named after the repo
+│   ├── data/  models/  losses/  metrics/  train/  utils/     # mandatory subpackages
+│   ├── scripts/             # CLIs: {{PROJECT_NAME}}-main.py, {{PROJECT_NAME}}-eval.py, dm_link.py
+│   ├── slurm/               # cluster job scripts
+│   ├── <domain>/ ...        # project-specific subpackages
+│   └── __init__.py  __main__.py  app.py  py.typed
+├── configs/                 # one yaml per experiment
+├── notebooks/               # capabilities.ipynb: quick checks of what the repo can do
+├── tests/                   # pytest
+├── third_party/             # external repos as git submodules
+├── .docs/                   # the record (hidden: needs `tree -a`)
+│   ├── progress.md          #   timetable + log + todos — committed
+│   ├── figures/  latex-draft/  runs/<run-name>/
+├── resources/               # gitignored, built per machine by {{MODULE_NAME}}/scripts/dm_link.py
+│   ├── data/                #   dataset links + generated/
+│   └── pretrained-checkpoints/
+├── outputs/                 # gitignored: one directory per run + background-job logs
+│   ├── <experiment>-000/    #   config.json, metrics.jsonl, val_<step>.json, last.pt, best.pt, DONE
+│   ├── <experiment>-<tag>/  #   short test runs, same layout
+│   └── logs/                #   stdout of background jobs, slurm-*.out
+├── config-global.json       # hosts, datasets, checkpoints, methods, smoke
+├── pyproject.toml  uv.lock  .python-version
+├── README.md  HANDOFF.md  instructions.md
+└── .gitignore  .gitmodules
 ```
-
-Layout owned by `general-codebase-structure`; `data/`, `checkpoints/` and
-`outputs/` are materialised per machine by `data-management`.
 
 ### .docs/
 
@@ -85,8 +86,8 @@ browsers; enable "Show hidden files" to see it.
 2. Read `.docs/progress.md` — timetable, log, and the open todos.
 3. Read `instructions.md` for coding standards (enforced by ruff + mypy).
 4. Run `uv sync` to reproduce the env.
-5. Run `python3 scripts/dm_link.py --check` to confirm this machine's
-   `data/` and `checkpoints/` are wired up.
+5. Run `python3 {{MODULE_NAME}}/scripts/dm_link.py --check` to confirm this
+   machine's `resources/` is wired up.
 6. When you finish a session, append a dated entry under the right `# Log`
    section of `.docs/progress.md`, prune its `# Todos`, and update this
    file if you learned something future-you would need to pick up cold.

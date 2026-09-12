@@ -15,13 +15,18 @@ build/
 .idea/
 .vscode/
 
-# data-management (machine-dependent, never committed)
-data/
-checkpoints/
-outputs/
+# Machine-dependent, never committed (built by <module>/scripts/dm_link.py)
+/resources/
+/outputs/
+
+# Executed notebook copies
+/notebooks/*.executed.ipynb
 
 # NOTE: .docs/ is deliberately NOT ignored -- it is the record of
-# the work (progress.md, figures, promoted runs).
+# the work (progress.md, figures, latex-draft, promoted runs).
+
+# Experiment tracking caches
+wandb/
 
 # OS
 .DS_Store

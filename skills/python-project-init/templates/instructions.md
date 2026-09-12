@@ -15,6 +15,16 @@ Enforce on every change.
 - **Slim-first.** Prefer stdlib + subprocess over heavy frameworks. New
   runtime deps need a rationale line in `HANDOFF.md`'s decisions table.
 
+## Layout (fixed)
+
+- Flat package `<module>/` at the repo root, named after the repo.
+  Mandatory subpackages: `data/ models/ losses/ metrics/ train/ utils/
+  scripts/ slurm/`; project domains beside them.
+- Entry points are `<module>/scripts/<repo>-main.py` (training) and
+  `<module>/scripts/<repo>-eval.py`; experiment yaml in `configs/`, quick
+  checks in `notebooks/`, machine-dependent inputs in `resources/`
+  (gitignored), runs in `outputs/` (gitignored). Full tree: `HANDOFF.md`.
+
 ## Workflow
 
 - Keep `.docs/progress.md` updated each session. It has three parts
@@ -31,15 +41,16 @@ Enforce on every change.
 
 ## Verification before saying "done"
 
-1. `uv run ruff check src/` → zero errors
-2. `uv run ruff format --check src/` → clean
-3. `uv run mypy src/` → zero errors
-4. If there's an entry point: `uv run <script-name>` → it launches
+1. `uv run ruff check .` → zero errors
+2. `uv run ruff format --check .` → clean
+3. `uv run mypy` → zero errors
+4. `uv run pytest` → green
+5. If there's an entry point: `uv run <script-name>` → it launches
    without crashing on the expected platform.
 
 ## Directories
 
-`data/`, `checkpoints/` and `outputs/` are gitignored and built per
-machine by `python3 scripts/dm_link.py`. Never commit them, never
-hand-create a fourth name for the same idea, and never put a `.venv`
+`resources/` and `outputs/` are gitignored and built per machine by
+`python3 <module>/scripts/dm_link.py`. Never commit them, never
+hand-create another name for the same idea, and never put a `.venv`
 inside an HPC workspace — those filesystems are limited by inodes.

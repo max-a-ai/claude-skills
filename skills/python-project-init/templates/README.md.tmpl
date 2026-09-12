@@ -6,25 +6,26 @@
 
 ```bash
 uv sync
+python3 {{MODULE_NAME}}/scripts/dm_link.py --smoke   # resources/, outputs/ for this machine
 uv run {{PROJECT_NAME}}
+uv run pytest
 ```
 
 ## Verify
 
 ```bash
-uv run ruff check src/
-uv run ruff format --check src/
-uv run mypy src/
+uv run ruff check .
+uv run ruff format --check .
+uv run mypy
 ```
 
 ## Layout
 
-See [HANDOFF.md](HANDOFF.md) for the full picture, and
+See [HANDOFF.md](HANDOFF.md) for the full tree, and
 [.docs/progress.md](.docs/progress.md) for the timetable, log and todos.
+The package is `{{MODULE_NAME}}/` (flat layout); entry points are
+`{{MODULE_NAME}}/scripts/{{PROJECT_NAME}}-main.py` and `-eval.py`.
 
-`data/`, `checkpoints/` and `outputs/` are gitignored and machine-dependent.
-Build them for this machine with:
-
-```bash
-python3 scripts/dm_link.py --smoke
-```
+`resources/` and `outputs/` are gitignored and machine-dependent; build
+them with `python3 {{MODULE_NAME}}/scripts/dm_link.py` (hosts and sources
+in `config-global.json`).

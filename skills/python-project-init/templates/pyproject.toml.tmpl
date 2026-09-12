@@ -13,18 +13,29 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/{{MODULE_NAME}}"]
+packages = ["{{MODULE_NAME}}"]
 
 [dependency-groups]
 dev = [
     "ruff>=0.8",
     "mypy>=1.11",
+    "pytest>=8",
 ]
+debug = [
+    "jupyter>=1.1",
+    "ipywidgets>=8.1",
+    "nbformat>=5.10",
+    "nbclient>=0.10",
+]
+
+[tool.uv]
+default-groups = ["dev", "debug"]
 
 [tool.ruff]
 line-length = 79
 target-version = "{{PYTHON_TAG}}"
-src = ["src"]
+src = ["."]
+extend-exclude = ["third_party", "notebooks", "resources", "outputs"]
 
 [tool.ruff.lint]
 select = [
@@ -45,6 +56,9 @@ quote-style = "double"
 [tool.mypy]
 python_version = "{{PYTHON_VERSION}}"
 strict = true
-files = ["src"]
+files = ["{{MODULE_NAME}}", "tests"]
 warn_unused_ignores = true
 warn_redundant_casts = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
