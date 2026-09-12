@@ -7,13 +7,14 @@ description: Scaffold a new Python project with UV + hatchling + ruff/mypy (stri
 
 Scaffold a slim, strictly-typed Python project with the user's standard
 workflow: UV, a flat package named after the repo, ruff/mypy, and the
-`.docs/` documentation tree. Reference implementation:
-`~/Documents/lidar-bedlam` (layout finalised 2026-09-12).
+`.docs/` documentation tree (layout finalised 2026-09-12).
 
 The tree below is also stated, and audited, by [[general-codebase-structure]];
-the two must agree. The `dm_*` scripts and `config-global.json` template come
-from [[data-management]] and [[general-codebase-structure]], not from the
-reference repo.
+the two must agree. The `dm_*` scripts come from [[data-management]] and the
+`config-global.json` template from [[general-codebase-structure]]; those are
+the only sources. `~/Documents/lidar-bedlam` was the first attempt at this
+layout and still carries an older `dm_link.py` / config format — do not copy
+from it.
 
 ## Invariant defaults
 
@@ -68,7 +69,7 @@ reference repo.
 │   │   └── wandb/           #     wandb files if the run logged directly
 │   ├── batchtest2-b1024/    #   a short test run, same layout, name = <experiment>-<tag>
 │   └── logs/                #   stdout of background jobs: generation, tokens, rsync, slurm-*.out
-├── config-global.json       # hosts, datasets, checkpoints, methods, smoke        [tracked]
+├── config-global.json       # nas_root, machines, workspaces, datasets, checkpoints, methods, smoke  [tracked]
 ├── pyproject.toml  uv.lock  .python-version
 ├── README.md  HANDOFF.md  instructions.md
 └── .gitignore  .gitmodules

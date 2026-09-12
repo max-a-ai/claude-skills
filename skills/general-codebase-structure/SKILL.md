@@ -12,7 +12,7 @@ description: >
 **This skill is the contract, not the scaffolder.** It states the layout and
 audits a repo against it; [[python-project-init]] writes the files. When the
 two disagree, this skill wins and the initializer is the thing to fix.
-Reference implementation of the tree: `~/Documents/lidar-bedlam`.
+The `dm_*` scripts that build the gitignored part live in [[data-management]].
 
 [[general-codebase]] runs the audit below alongside ruff, mypy and wandb.
 
@@ -23,7 +23,7 @@ Reference implementation of the tree: `~/Documents/lidar-bedlam`.
 ├── pyproject.toml               uv + hatchling, ruff 79 cols, mypy strict
 ├── uv.lock
 ├── .python-version
-├── config-global.json           hosts, datasets, checkpoints, methods, smoke
+├── config-global.json           nas_root, machines, workspaces, datasets, checkpoints, methods, smoke
 ├── .gitignore
 ├── README.md
 ├── HANDOFF.md
