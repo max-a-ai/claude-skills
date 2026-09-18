@@ -35,6 +35,7 @@ rules are enforced by three layers — know which is which:
 | Any push | the user pushes, never Claude — print the command instead | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
 | Cluster deploy | code reaches a cluster by `git pull`, never rsync: the user pushes, Claude pulls on the cluster and confirms HEAD == `origin/<branch>` before reporting success | this audit | `git-it` (Flow D) |
 | Watching runs | the repo's handoff file is the source of truth; watch with Monitor, tick with `CronCreate`, report as one HTML scoreboard republished in place (running table first, then mains, then ablations) | that skill | `run-monitoring` |
+| Choosing what to train/eval on | read the source catalogue from the configs; a named experiment needs its own config (the run name comes from it), a one-off knob rides `EXTRA_SET`; confirm the submit line, then publish one HTML table per eval source | that skill | `train-eval-matrix` |
 
 ## Audit checklist (run these, cite evidence, report PASS/FAIL)
 
