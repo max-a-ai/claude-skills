@@ -33,6 +33,7 @@ rules are enforced by three layers — know which is which:
 | Before "done" | run this audit after code/config changes | **Stop hook** `audit_gate.sh` ✅ live | this skill |
 | Any commit | one-line `<prefix> <description>`, no Claude attribution, author = user | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
 | Any push | the user pushes, never Claude — print the command instead | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
+| Cluster deploy | code reaches a cluster by `git pull`, never rsync: the user pushes, Claude pulls on the cluster and confirms HEAD == `origin/<branch>` before reporting success | this audit | `git-it` (Flow D) |
 
 ## Audit checklist (run these, cite evidence, report PASS/FAIL)
 
@@ -63,6 +64,13 @@ rules are enforced by three layers — know which is which:
 4c. **Data + environment** — `python3 <module>/scripts/dm_link.py --check` passes, and
    `find <workspace> -maxdepth 3 -name .venv` is empty. Rules and reasons:
    [[data-management]].
+4d. **Cluster deploy** — if code was delivered to a cluster this session, it went
+   by `git pull`, not rsync. The cluster's `git log --oneline -1` must equal
+   local `origin/<branch>` and `git status -sb` must show no divergence; cite
+   both hashes. An rsync'd checkout (untracked files shadowing the repo, pulls
+   failing on collisions) is a FAIL — flag it, and never clear it with
+   `checkout -f`/`reset --hard`/`restore`/`clean`/`rm`/`mv` without the user's
+   explicit go-ahead. Owning skill: [[git-it]] (Flow D).
 5. **Secrets** — no credentials in tracked files; `wandb/` gitignored.
 6. **Commit hygiene** — do commits made this session use a one-line
    `<prefix> <description>` subject drawn from the eight types (`add`, `bug`,

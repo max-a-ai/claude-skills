@@ -218,6 +218,62 @@ If both ahead and behind → put `Fetch then pull` first and warn about likely m
 
 **Pushing is never one of the actions this skill performs.** See Safety rules.
 
+---
+
+## Flow D — Deploy to a remote machine (cluster)
+
+Code reaches a cluster **through git, never rsync**. An rsync deploy leaves
+untracked files sitting on top of the checkout; they shadow the repo, they make
+every later `git pull` fail with *"untracked working tree files would be
+overwritten"*, and the cluster silently runs code that is in no commit.
+
+The division of labour is fixed:
+
+- **The user pushes.** Claude never pushes, here or anywhere (`git_guard.sh`).
+- **Claude pulls on the remote machine, and confirms it landed.**
+
+### D1. Before pulling, confirm the commit is on the remote
+
+```bash
+git fetch origin && git log --oneline -1 origin/main    # locally
+```
+
+If the commit is not on `origin` yet, stop: print the push command and wait.
+Pulling cannot deliver what was never pushed.
+
+### D2. Pull on the cluster
+
+```bash
+ssh -4 <host> 'cd <repo> && git pull --ff-only'
+```
+
+SSH to a cluster is flaky — retry up to 3x with a short sleep.
+
+### D3. Confirm it landed (mandatory — never assume)
+
+A pull that printed nothing useful, or that you did not read, is not a
+deployment. Always verify:
+
+```bash
+ssh -4 <host> 'cd <repo> && git log --oneline -1 && git status -sb | head -1'
+```
+
+Report the result explicitly:
+
+- the cluster's HEAD hash **equals** local `origin/main`, and
+- `git status -sb` shows `## <branch>...origin/<branch>` with no ahead/behind.
+
+State both hashes in the summary. If they differ, say so plainly — do not
+report success.
+
+### D4. When the pull refuses
+
+`--ff-only` fails on untracked collisions, local modifications or divergence.
+**Stop and report.** Do not reach for `git checkout -f`, `git reset --hard`,
+`git restore`, `git clean`, `rm -rf` or `mv` to clear the way: each discards
+whatever the cluster is holding, and only the user can judge whether that
+matters. Describe what blocked the pull and let them decide.
+
 ### C3. Run + summary
 
 - **Fetch:** `git fetch --all --prune`. Summary: "fetched, local is N ahead / M behind".
