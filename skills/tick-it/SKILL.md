@@ -22,42 +22,43 @@ set one up.
 
 ## The report layout, in this order
 
-### 1. Clock headline
+### 1. One code block: clock, what is watched, raw queue
 
-`## 13:00` — nothing else on the line.
+The first three things are rows of a single fenced block, in this order —
+the tick's hour, the things being watched, then the queue verbatim:
 
-### 2. The raw queue, with no words attached
+```
+tick     13:00
+repo     <org>/<repo> - local <path> · <cluster> <path>
+tracker  <wandb project> - <how metrics get there>
+jobs     <scheduler> · <partition> · <account>
 
-Straight after the headline, a fenced block holding the **verbatim** output
-of the queue command, exactly as the cluster printed it. The user has an
-alias for it (on Slurm usually `sq` = `squeue -u $USER`); run that command
-and paste what came back.
+<the queue command's output, exactly as the cluster printed it>
+```
 
-No commentary, no column you added, no rows you filtered, no "(empty)"
-prose inside the block — if the queue is empty, the block holds the header
-line alone. Everything you noticed about it belongs in section 5.
+The clock row is the full hour, not the minute the scheduler fired.
 
-Aliases live in `.bash_aliases`, which a non-interactive `ssh` does not
-read, so `ssh host sq` fails with `command not found`. Send the underlying
-command instead.
+The watched rows name the concrete things, so the report is readable
+without the session: the repository and both checkouts, the experiment
+tracker project, the job source. Revise them when they change, not every
+tick.
 
-### 3. Sub-headings: what is actually being watched
+The queue is **verbatim**: no commentary, no column you added, no rows you
+filtered, no "(empty)" prose. An empty queue is the header line alone.
+Everything you noticed about it belongs in the interpretation.
 
-Name the concrete things, so the report is readable without the session:
+The user has an alias for the queue command (on Slurm usually `sq` =
+`squeue -u $USER`). Aliases live in `.bash_aliases`, which a
+non-interactive `ssh` does not read, so `ssh host sq` fails with `command
+not found`. Send the underlying command instead.
 
-- the repository and the checkout being monitored (local path, cluster path)
-- the experiment tracker project (wandb project / entity), if there is one
-- the job source (Slurm account, partition)
+### 2. The link
 
-Keep it to a line each. Revise it when it changes, not every tick.
-
-### 4. The link
-
-The scoreboard artifact URL or the overview file, on its own, right after
-the sub-headings. The reader should be one click from the detail without
+The scoreboard artifact URL or the overview file, on its own line, right
+after the block. The reader should be one click from the detail without
 scrolling past the analysis.
 
-### 5. Interpretation
+### 3. Interpretation
 
 Now the words. What changed since the last tick, what finished, what
 failed, what you did about it, and what it means. This is the only section
