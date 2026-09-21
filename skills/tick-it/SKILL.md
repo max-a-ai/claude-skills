@@ -22,28 +22,29 @@ set one up.
 
 ## The report layout, in this order
 
-### 1. One code block: clock, what is watched, raw queue
+### 1. Labelled rows, then the queue
 
-The first three things are rows of a single fenced block, in this order —
-the tick's hour, the things being watched, then the queue verbatim:
+The first things are **markdown rows**, one label per line — not a code
+block. Each names a place the reader may want to open, so write them as
+links wherever a link exists:
 
 ```
-tick     13:00
-repo     <org>/<repo> - local <path> · <cluster> <path>
-tracker  <wandb project> - <how metrics get there>
-jobs     <scheduler> · <partition> · <account>
+**Tick:** 13:00
 
-<the queue command's output, exactly as the cluster printed it>
+**Online Repo:** <the forge URL, clickable>
+**Local WS:** <the local checkout, `~`-relative>
+**Cluster (<host>):** `<shell alias>` -> <the full path on the cluster>
+**wandb:** <the project URL, clickable>
+**Cluster Queue:**
 ```
 
-The clock row is the full hour, not the minute the scheduler fired.
+Look the values up once rather than guessing them: the forge URL from `git
+remote -v`, the cluster alias from the host's `.bash_aliases`, the tracker
+entity and project from whatever code calls `wandb.init`. Revise the rows
+when they change, not every tick.
 
-The watched rows name the concrete things, so the report is readable
-without the session: the repository and both checkouts, the experiment
-tracker project, the job source. Revise them when they change, not every
-tick.
-
-The queue is **verbatim**: no commentary, no column you added, no rows you
+Straight after the `Cluster Queue:` row, the queue output in a fenced
+block, **verbatim** — no commentary, no column you added, no rows you
 filtered, no "(empty)" prose. An empty queue is the header line alone.
 Everything you noticed about it belongs in the interpretation.
 
@@ -52,11 +53,11 @@ The user has an alias for the queue command (on Slurm usually `sq` =
 non-interactive `ssh` does not read, so `ssh host sq` fails with `command
 not found`. Send the underlying command instead.
 
-### 2. The link
+### 2. The scoreboard link
 
-The scoreboard artifact URL or the overview file, on its own line, right
-after the block. The reader should be one click from the detail without
-scrolling past the analysis.
+A clickable markdown link on its own row, labelled so it is obvious what
+opens: `**Scoreboard:** [<name>](<url>)`. The reader should be one click
+from the detail without scrolling past the analysis.
 
 ### 3. Interpretation
 
