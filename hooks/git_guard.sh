@@ -3,8 +3,9 @@
 # PreToolUse hook (Bash) — git guard.
 #
 # Hard rules (no escape hatch by design; the user asked for this):
-#   1. Claude never pushes. Any `git push` is refused; print the command for the
-#      user instead.
+#   1. Claude never pushes on its own. Any `git push` is turned into a
+#      permission prompt (permissionDecision "ask"): the user must confirm it
+#      in the chat, and Claude only proposes it after an explicit go.
 #   2. Commits are one line: `<prefix> <description>` with prefix in
 #      add|bug|minor|refactor|docs|test|config|remove, <= 72 chars, no body,
 #      no second -m, no -F/--file, no heredoc, and never a Co-Authored-By /
@@ -25,13 +26,18 @@ block() {
   exit 2
 }
 
-# --- 1. never push -----------------------------------------------------------
-# Deliberately coarse: any whole-word `push` after a `git` word is refused, no
-# matter which global flags (-C dir, -c k=v, --git-dir ...) sit in between.
+# --- 1. push only with the user's go ----------------------------------------
+# Deliberately coarse: any whole-word `push` after a `git` word, no matter
+# which global flags (-C dir, -c k=v, --git-dir ...) sit in between, is
+# escalated to a permission prompt. Auto mode cannot wave it through: the
+# user answers the prompt. Force pushes stay refused.
 if printf '%s' "$cmd" | grep -qE '(^|[^A-Za-z0-9_.-])git[[:space:]]+(.*[[:space:]])?push([^A-Za-z0-9_-]|$)'; then
-  block "Claude never runs 'git push' (plain, -u, --force, --force-with-lease, --tags, --mirror ...)." \
-"Print the exact command in a fenced code block and let the user run it, e.g.
-  git push -u origin <branch>"
+  if printf '%s' "$cmd" | grep -qE -- '(^|[[:space:]])(-f|--force|--force-with-lease|--mirror)([[:space:]=]|$)|[[:space:]]\+[A-Za-z]'; then
+    block "force pushes are never run by Claude." \
+"Print the exact command in a fenced code block and let the user run it."
+  fi
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"git push needs the user'"'"'s go: confirm only if you asked for this push in the chat."}}'
+  exit 0
 fi
 
 # --- 3. author stays the user ------------------------------------------------

@@ -32,8 +32,8 @@ rules are enforced by three layers — know which is which:
 | Single-frame trainings | log/checkpoint + eval every epoch (`save_interval: 1`, `eval_every_epoch: true`); sequential runs keep their cadence | configs | `wandb-training` |
 | Before "done" | run this audit after code/config changes | **Stop hook** `audit_gate.sh` ✅ live | this skill |
 | Any commit | one-line `<prefix> <description>`, no Claude attribution, author = user | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
-| Any push | the user pushes, never Claude — print the command instead | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
-| Cluster deploy | code reaches a cluster by `git pull`, never rsync: the user pushes, Claude pulls on the cluster and confirms HEAD == `origin/<branch>` before reporting success | this audit | `git-it` (Flow D) |
+| Any push | only after the user's explicit go in the chat; the hook raises a confirmation prompt; force pushes refused | **PreToolUse hook** `git_guard.sh` ✅ live + this audit | `git-it` |
+| Cluster deploy | code reaches a cluster by `git pull`, never rsync: push on the user's go, Claude pulls on the cluster and confirms HEAD == `origin/<branch>` before reporting success | this audit | `git-it` (Flow D) |
 | Watching runs | the repo's handoff file is the source of truth; watch with Monitor, tick with `CronCreate`, report as one HTML scoreboard republished in place (running table first, then mains, then ablations) | that skill | `run-monitoring` |
 | Choosing what to train/eval on | read the source catalogue from the configs; a named experiment needs its own config (the run name comes from it), a one-off knob rides `EXTRA_SET`; confirm the submit line, then publish one HTML table per eval source | that skill | `train-eval-matrix` |
 
@@ -79,7 +79,8 @@ rules are enforced by three layers — know which is which:
    `minor`, `refactor`, `docs`, `test`, `config`, `remove`)? Verify no commit
    carries a `Co-Authored-By:`, `Claude-Session:` or "Generated with" trailer:
    `git log --format='%H %s%n%b' origin/HEAD..HEAD | grep -niE 'co-authored|claude-session|generated with'`
-   must return nothing. Verify nothing was pushed by Claude — the user pushes.
+   must return nothing. Verify every push Claude ran followed an explicit go
+   from the user in the chat (none unasked).
    Confirm `git_guard.sh` is wired as a PreToolUse Bash hook in `~/.claude/settings.json`.
 7. **Skill coverage** — for each skill in `~/.claude/skills/`, if its trigger
    occurred, confirm it was applied; flag any that should have fired.

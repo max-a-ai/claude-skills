@@ -209,14 +209,14 @@ This tells you: is upstream set, how many commits ahead/behind. Use this to **pr
 - **Options:** Order by likelihood from C1's analysis. Defaults:
   1. `Fetch` — `git fetch --all --prune` (refs only)
   2. `Pull` — `git pull --ff-only`
-  3. `Show me the push command` — print it; the user runs it
+  3. `Push` — `git push` (only after the user's explicit go; the hook prompts)
   4. `Fetch then pull`
 
 If C1 detected "behind by N" → put `Pull` first.
-If C1 detected "ahead by N" → put `Show me the push command` first.
+If C1 detected "ahead by N" → put `Push` first.
 If both ahead and behind → put `Fetch then pull` first and warn about likely merge.
 
-**Pushing is never one of the actions this skill performs.** See Safety rules.
+**Pushing runs only on the user's explicit go** (choosing `Push` here counts as the go); the hook then asks once more. See Safety rules.
 
 ---
 
@@ -229,7 +229,8 @@ overwritten"*, and the cluster silently runs code that is in no commit.
 
 The division of labour is fixed:
 
-- **The user pushes.** Claude never pushes, here or anywhere (`git_guard.sh`).
+- **Claude pushes only on the user's go** (an explicit "push" in the chat; the
+  `git_guard.sh` hook then asks for confirmation). Never unasked.
 - **Claude pulls on the remote machine, and confirms it landed.**
 
 ### D1. Before pulling, confirm the commit is on the remote
@@ -238,8 +239,8 @@ The division of labour is fixed:
 git fetch origin && git log --oneline -1 origin/main    # locally
 ```
 
-If the commit is not on `origin` yet, stop: print the push command and wait.
-Pulling cannot deliver what was never pushed.
+If the commit is not on `origin` yet, stop and ask for the go to push (or the
+user pushes). Pulling cannot deliver what was never pushed.
 
 ### D2. Pull on the cluster
 
@@ -278,9 +279,10 @@ matters. Describe what blocked the pull and let them decide.
 
 - **Fetch:** `git fetch --all --prune`. Summary: "fetched, local is N ahead / M behind".
 - **Pull:** `git pull --ff-only`. If divergence, stop and ask: `--rebase` / `--no-ff merge` / `Cancel`.
-- **Show me the push command:** run nothing. Print the exact command in a fenced
-  block for the user to copy, using the real branch name. If C1 showed no
-  upstream, use the `-u` form:
+- **Push:** run `git push` (or `git push -u origin <branch>` when C1 showed no
+  upstream) — only because the user chose it or said "push" in the chat; the
+  hook raises a confirmation prompt on top. Without that go, print the command
+  instead:
 
   ```
   git push                          # upstream already set
@@ -298,13 +300,22 @@ Summary:
 
 These rules are enforced by the `git_guard.sh` PreToolUse hook
 (`~/.claude/hooks/git_guard.sh`, wired in `~/.claude/settings.json`): every
-`git push` and every non-conforming `git commit` is refused with exit 2 before it
+`git push` is escalated to a permission prompt the user answers, every force
+push and every non-conforming `git commit` is refused with exit 2 before it
 runs, whether or not this skill was invoked. The hook has no escape hatch on
 purpose. If it blocks you, fix the command; never work around it (no `--no-verify`,
 no wrapper scripts, no `sh -c`).
 
-- **Never run `git push`** in any form — plain, `-u`, `--force`, `--force-with-lease`,
-  or tags. The user pushes. Print the command instead, always.
+- **Never push unasked.** Run a push only after the user said "push" / "go"
+  for that push in the chat (changed 2026-09-21; before that Claude never pushed).
+- **Push review (how the go is obtained, since 2026-09-21):** list the unpushed
+  commits (`git log --oneline @{u}..HEAD`), then ask one AskUserQuestion per
+  commit — question = the commit's one-line summary of what it changes, options
+  `push` / `revise` / `drop`. `push` for all → one `git push`. `revise` → stop, the
+  user says what to change (amend or a follow-up commit), then ask again. `drop`
+  → remove it (`git rebase -i` / `git reset --soft` if it is the tip), ask again
+  for what is left. Do not push while any commit is still `revise`.
+  Never `--force`, `--force-with-lease`, `--mirror` or `+ref` pushes: refused.
 - Never run `git commit --amend` on a commit that is already pushed without saying
   so and handing over the force-push command rather than running it.
 - Never `git reset --hard`, `git clean -fd`, or `git checkout -- .` without explicit ask.
