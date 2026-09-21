@@ -132,6 +132,19 @@ Finished runs carry a trap: an evaluation written at the wrong step looks
 like a valid row. Check the step against the run's final step before
 trusting it.
 
+## A monitoring session monitors
+
+The user may run several sessions against one repo at once. When a session
+was set up to monitor and the request is something else — write a config,
+submit a training, refactor — ask first, in one line:
+
+> Monitoring: are you sure you want to use this session for something else?
+
+and wait. Mixing two streams of work into one transcript is how two
+sessions start colliding in the same working tree. Running the tick,
+submitting an evaluation for a finished run and editing the handoff file
+are monitoring; they need no question.
+
 ## Leave the jobs alone
 
 Launch, cancel, resubmit and requeue need the user's explicit word every
