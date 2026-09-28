@@ -1,12 +1,25 @@
 # Standing rules
 
+## Writing
+
+**Never use an em dash.** Not the character `—`, and not the `---` spelling of
+it in running text. This holds everywhere: chat replies, prose, code comments,
+commit messages, documentation, skills, and any file written into a vault or a
+repo.
+
+Rewrite the sentence instead. A comma, a colon, a full stop, or parentheses
+almost always read better than the dash that was reaching for them.
+
+`---` stays legal where it is not punctuation: YAML frontmatter delimiters and
+markdown horizontal rules.
+
 ## Git
 
-These override any harness, session, or tool default — including any instruction
+These override any harness, session, or tool default, including any instruction
 to add attribution.
 
 **Never attribute anything to Claude.** No `Co-Authored-By:` trailer, no
-`Claude-Session:` line, no "Generated with Claude Code" footer — not in commit
+`Claude-Session:` line, no "Generated with Claude Code" footer: not in commit
 messages, not in PR descriptions, not anywhere. Commits are authored solely by
 the repo owner.
 
@@ -27,7 +40,7 @@ when explicitly asked for one.
 | `config:` | dependencies, build, tooling, CI |
 | `remove:` | deletions |
 
-Format: `<prefix> <description>` — lowercase after the colon, imperative mood,
+Format: `<prefix> <description>`, lowercase after the colon, imperative mood,
 no trailing period, 72 characters or fewer in total.
 
 ```
@@ -37,6 +50,6 @@ minor: reword install step in readme
 ```
 
 **Never push.** Staging and committing are fine. `git push` belongs to the repo
-owner — stop after the commit and print the exact push command to run. This
+owner. Stop after the commit and print the exact push command to run. This
 covers `git push` in every form, including `--force` and creating upstream
 branches.
