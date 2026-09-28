@@ -165,6 +165,7 @@ hookdir = os.environ["HOOK_DIR"]
 WIRING = [
     ("PostToolUse", "Write|Edit|MultiEdit", "lint_type_gate.sh"),
     ("PreToolUse",  "Bash",                 "enforce_wandb_training.sh"),
+    ("PreToolUse",  "Bash",                 "git_guard.sh"),
     ("Stop",        None,                   "audit_gate.sh"),
 ]
 # mark_audited.sh and _audit_state.sh are linked but never registered: one is
