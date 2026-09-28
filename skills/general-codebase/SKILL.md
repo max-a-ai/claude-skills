@@ -36,6 +36,7 @@ rules are enforced by three layers — know which is which:
 | Cluster deploy | code reaches a cluster by `git pull`, never rsync: push on the user's go, Claude pulls on the cluster and confirms HEAD == `origin/<branch>` before reporting success | this audit | `git-it` (Flow D) |
 | Watching runs | the repo's handoff file is the source of truth; watch with Monitor, tick with `CronCreate`, report as one HTML scoreboard republished in place (running table first, then mains, then ablations) | that skill | `run-monitoring` |
 | Choosing what to train/eval on | read the source catalogue from the configs; a named experiment needs its own config (the run name comes from it), a one-off knob rides `EXTRA_SET`; confirm the submit line, then publish one HTML table per eval source | that skill | `train-eval-matrix` |
+| Writing up a paper | highlight colour carries meaning (red = not understood, blue = quotable); Excerpt + concise notes are printed to chat, never written into the vault | that skill | `paper-notes` |
 
 ## Audit checklist (run these, cite evidence, report PASS/FAIL)
 
