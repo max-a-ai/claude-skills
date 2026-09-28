@@ -6,7 +6,7 @@ Combines three sources:
 
 | Set | Source | Contents |
 |---|---|---|
-| `skills/` | mine | 10 private skills — Python/ML workflow (ruff, mypy, wandb, project init, repo layout, HPC data management, graphify, git-it, the standing-rules auditor) |
+| `skills/` | mine | 14 private skills — Python/ML workflow (ruff, mypy, wandb, project init, repo layout, HPC data management, run monitoring, paper notes, graphify, git-it, the standing-rules auditor) |
 | `third_party/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
 | `third_party/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
 
@@ -24,9 +24,9 @@ That is the whole setup, on any machine. It installs three things into `~/.claud
 
 | | |
 |---|---|
-| `~/.claude/skills/` | 36 skills, symlinked back here |
+| `~/.claude/skills/` | 40 skills, symlinked back here |
 | `~/.claude/CLAUDE.md` | standing rules, symlinked to `rules/CLAUDE.md` |
-| `~/.claude/hooks/` + `hooks` entries in `settings.json` | the three enforcement hooks |
+| `~/.claude/hooks/` + `hooks` entries in `settings.json` | the four enforcement hooks |
 
 Everything lands in your **home directory**, never in a project. Your code repos
 get no `.claude/` directory, no gitignore entry, and nothing to commit — `git
@@ -71,7 +71,7 @@ Only needed when collaborators or CI must get the skills without cloning this re
 
 ## Enforcement hooks
 
-Skills and `CLAUDE.md` state the rules; these three make them binding by failing
+Skills and `CLAUDE.md` state the rules; these four make them binding by failing
 the tool call when one is broken. `install.sh` symlinks them into
 `~/.claude/hooks/` and registers them in `settings.json` (idempotently).
 
@@ -79,11 +79,15 @@ the tool call when one is broken. `install.sh` symlinks them into
 |---|---|---|
 | `lint_type_gate.sh` | `PostToolUse` on `Write\|Edit\|MultiEdit` | a `*.py` edit that leaves ruff or mypy errors |
 | `enforce_wandb_training.sh` | `PreToolUse` on `Bash` | a `main.py` launch without `--wandb-project`/`--wandb-name` |
+| `git_guard.sh` | `PreToolUse` on `Bash` | a commit that is not a one-line `<prefix> <description>`, carries an attribution trailer or overrides the author; escalates every `git push` to a confirmation prompt and refuses force pushes |
 | `audit_gate.sh` | `Stop` | ending the turn with Python/config changes `general-codebase` has not audited |
 
 `mark_audited.sh` clears the Stop gate after an audit passes; it re-arms on the
 next Python edit. `_audit_state.sh` is the shared fingerprint library — both use
 it so they cannot disagree about what "audited" means.
+
+`git_guard.sh` has no escape hatch by design — no `SKIP_` variable and no
+opt-out file. When it blocks a command, the command is wrong.
 
 ### The ruff/mypy gate
 
@@ -135,9 +139,9 @@ Three private skills form a chain, split so that the rules have exactly one home
 
 | Skill | Role |
 |---|---|
-| `general-codebase-structure` | **the contract** — the canonical tree (`src/<module>/`, `.docs/`, `config-global.json`, gitignored `data/`+`checkpoints/`+`outputs/`) and the audit that checks a repo against it |
+| `general-codebase-structure` | **the contract** — the canonical tree (a flat `<module>/` package, `.docs/`, `config-global.json`, gitignored `resources/`+`outputs/`) and the audit that checks a repo against it |
 | `python-project-init` | **the scaffolder** — writes what the contract defines |
-| `data-management` | **the data** — moves datasets and checkpoints onto NHR@FAU's Helma/Alex workspaces, and materialises `data/` differently on each machine |
+| `data-management` | **the data** — moves datasets and checkpoints onto NHR@FAU's Helma/Alex workspaces, and materialises `resources/` differently on each machine |
 
 `general-codebase` calls the structure audit alongside ruff, mypy and wandb, so
 layout drift fails the same gate as a type error.
