@@ -48,7 +48,8 @@ from it.
 │   ├── <domain>/ ...        #   project-specific subpackages, added as needed
 │   └── __init__.py  __main__.py  app.py  py.typed
 ├── configs/                 # one yaml per experiment                            [tracked]
-├── notebooks/               # one capabilities notebook: quick checks of the repo [tracked; *.executed.ipynb ignored]
+├── notebooks/               # numbered notebooks + generated index              [tracked; *.executed.ipynb ignored]
+│   └── ipynb-assets/        #   nb001_<slug>.py: one function per cell          [tracked]
 ├── tests/                   # pytest, one file per module group                  [tracked]
 ├── third_party/             # external repos as git submodules                   [tracked as gitlinks]
 ├── .docs/                   # the record of the work (hidden: needs `tree -a`)   [tracked]
@@ -95,7 +96,8 @@ third level (the modules inside `<module>/data/`, the contents of
 | `<module>/slurm/` | yes | sbatch job scripts and login-node helpers (e.g. a wandb mirror) |
 | `<module>/<domain>/` | yes | project-specific subpackages (e.g. `geometry/`, `lidar/`, `rigs/`) |
 | `configs/` | yes | experiment yaml, one per run type; ablations as copies with one change |
-| `notebooks/` | yes | one `capabilities.ipynb` that shows what the repo can do on real data; executed copies are ignored |
+| `notebooks/` | yes | numbered `001-<slug>.ipynb`, plus a generated `README.md` index; executed copies are ignored |
+| `notebooks/ipynb-assets/` | yes | `nb001_<slug>.py`, the cell bodies, one documented function per cell |
 | `tests/` | yes | pytest unit tests; `uv run pytest` must pass before "done" |
 | `third_party/` | gitlinks | baseline / external repos as submodules, never edited in place |
 | `.docs/` | yes | the record: `progress.md` (timetable, log, todos), notes, `figures/`, `latex-draft/`, `runs/` |
@@ -140,15 +142,21 @@ third level (the modules inside `<module>/data/`, the contents of
    `<MODULE_NAME>/scripts/`; `dm_link.py` materialises
    `resources/data/<name>`, `resources/pretrained-checkpoints/<name>` and
    `outputs/` for the current host (`--check`, `--smoke`).
-9. **Create the remaining top-level folders:** `configs/`, `notebooks/`,
-   `tests/`, `third_party/` (tracked, `.gitkeep`), and the gitignored
-   `resources/`, `outputs/`.
+9. **Create the remaining top-level folders:** `configs/`,
+   `notebooks/ipynb-assets/`, `tests/`, `third_party/` (tracked,
+   `.gitkeep`), and the gitignored `resources/`, `outputs/`.
+9b. **Copy `nb_index.py`** from
+   [../general-codebase-structure/scripts/nb_index.py](../general-codebase-structure/scripts/nb_index.py)
+   into `<MODULE_NAME>/scripts/`. Leave `notebooks/README.md` unwritten:
+   a repo with no notebooks has no index, and `000-capabilities.ipynb`
+   arrives with the first real capability, not at scaffold time. The
+   notebook conventions live in [[general-codebase-structure]].
 10. **Create `instructions.md`** from [templates/instructions.md](templates/instructions.md).
 11. **Create `HANDOFF.md`** from [templates/HANDOFF.md.tmpl](templates/HANDOFF.md.tmpl)
     with today's date (`date +%Y-%m-%d`) and the project name.
 12. **Create `.gitignore`** from [templates/gitignore](templates/gitignore).
     It must ignore `resources/`, `outputs/`, `notebooks/*.executed.ipynb`
-    and must NOT ignore `.docs/`.
+    and must NOT ignore `.docs/` or `notebooks/README.md`.
 13. **Create `README.md`** from [templates/README.md.tmpl](templates/README.md.tmpl).
 14. **Sync and verify:**
     ```bash

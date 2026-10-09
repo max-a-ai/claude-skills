@@ -40,7 +40,11 @@ The `dm_*` scripts that build the gitignored part live in [[data-management]].
 │   └── <method>/                  clone, or symlink to an existing checkout
 │
 ├── configs/                     experiment yaml
-├── notebooks/                   capabilities notebook; *.executed.ipynb ignored
+├── notebooks/                   numbered; *.executed.ipynb ignored
+│   ├── 000-capabilities.ipynb   the repo tour: executes + visualises
+│   ├── 001-<slug>.ipynb         one question per notebook
+│   ├── ipynb-assets/            nb001_<slug>.py holds the cell bodies
+│   └── README.md                generated index, committed
 ├── tests/
 │
 ├── resources/     ┐ gitignored, machine-dependent, built by [[data-management]]
@@ -111,6 +115,111 @@ by default, a plain clone when it must stay out of `.gitmodules`, or a
 symlink to a checkout already on the machine. [[data-management]] owns
 `workspaces`, `datasets`, `checkpoints` and `smoke`.
 
+## Notebooks
+
+The failure this prevents is a folder of notebooks whose purpose nobody
+remembers.
+
+### Naming
+
+Notebooks are numbered, because they are read in order:
+`001-lift-splat-depth.ipynb` (three digits, hyphen, hyphenated slug).
+Every other `.py` in the repo is plain `snake_case.py` with no number.
+
+### The first markdown cell
+
+Exactly this shape, in this order:
+
+```markdown
+# is depth learnable without lidar supervision
+
+## Checks
+- [ ] frustum features land in the right pillar
+- [ ] depth histogram is not uniform
+
+**Verdict:**
+
+<free text from here on>
+```
+
+The `#` heading is the question the notebook answers, around ten words.
+It becomes the index's "Asks" column. `## Checks` holds only checkboxes,
+ticked off as you go; unticked boxes are fine and mean "still open".
+`**Verdict:**` is one line saying what came out, filled in when the last
+box is ticked. That line is what future-you reads instead of reopening
+the notebook, so a fully ticked notebook without one is an audit FAIL.
+
+### Cells stay one line
+
+The code is not meant to be read in the notebook. Each cell is the
+parameters it varies, then one call:
+
+```python
+from nb001_lift_splat_depth import plot_depth_histogram
+
+data_path: str = "resources/data/waymo"
+n_bins: int = 24
+plot_depth_histogram(data_path, n_bins)
+```
+
+The body lives in `notebooks/ipynb-assets/nb001_lift_splat_depth.py`,
+one function per cell, **always with a docstring**: hovering the call is
+how the code gets read.
+
+The asset name is mechanical, so the audit can check the pairing both
+ways: `001-lift-splat-depth.ipynb` pairs with `nb001_lift_splat_depth.py`
+(prefix `nb`, hyphens to underscores). That prefix and those underscores
+are what make it importable, and a statically resolvable import is what
+makes hover work. `importlib.import_module("001-lift-splat-depth")` also
+runs, but it types as `ModuleType`, so hover, signature help and
+autocomplete all go dead, which defeats the point of the split.
+
+Do not design around collapsing a cell by hand. VS Code keeps collapse
+state as editor view state keyed by cell index and never writes it into
+the file ([vscode#237074](https://github.com/microsoft/vscode/issues/237074)),
+so no notebook can ship collapsed. A one-line cell needs no collapsing.
+
+Code used anywhere outside its notebook belongs in `<module>/`, not in
+`ipynb-assets/`.
+
+### 000-capabilities.ipynb
+
+Every repo has one, and it is the entry point for anyone new. It executes
+and visualises the repo's most important capabilities in the order they
+were built, so running it top to bottom both proves the repo still works
+and shows what was done. Someone joining reads `.docs/progress.md` for
+the narrative and runs this for the demonstration.
+
+It links to progress.md rather than restating it. When a capability
+lands, add it here: its `## Checks` box is that capability, and the
+`**Verdict:**` line is "all N capabilities execute as of <date>".
+
+A fresh repo has no capabilities to demonstrate, so this notebook is
+required only once the repo has any other notebook.
+
+### notebooks/README.md
+
+Generated, committed, never hand-edited:
+
+```bash
+python3 <module>/scripts/nb_index.py          # rewrite
+python3 <module>/scripts/nb_index.py --check  # audit
+```
+
+One row per notebook: linked number, what it asks, its verdict, ticked
+checks, created date, last run, cell count. Every column is derived from
+the notebook or from git, so nothing is maintained by hand. Regenerate it
+whenever a notebook is added or edited, before the turn ends; the audit
+re-checks it as a backstop.
+
+**Last run is only trustworthy after a headless run.** VS Code records no
+execution timestamps at all, so the script reads the `*.executed.ipynb`
+sibling that `nbconvert --execute` writes, which sets `metadata.execution`
+by default. With no sibling the column falls back to the file mtime and is
+marked `*`. It reads the sibling rather than the notebook deliberately: a
+notebook executed headlessly once and re-run in VS Code afterwards keeps
+stale timestamps in its own metadata, and VS Code leaves them untouched.
+
 ## Audit
 
 Give every line a verdict and cite the command output behind it. A line you
@@ -121,11 +230,12 @@ read-only unless asked to fix.
    root with `__init__.py`; no `src/`; no loose `*.py` beside
    `pyproject.toml`; nothing at the top level beyond the tree above.
 2. **Directories** — `<module>/{data,models,losses,metrics,train,utils,scripts}/`,
-   `configs/`, `notebooks/`, `tests/`, `third_party/`, `.docs/figures/`,
-   `.docs/latex-draft/`, `.docs/runs/` present. `<module>/slurm/` only if
+   `configs/`, `notebooks/ipynb-assets/`, `tests/`, `third_party/`,
+   `.docs/figures/`, `.docs/latex-draft/`, `.docs/runs/` present. `<module>/slurm/` only if
    the repo runs on Helma/Alex. `<module>/scripts/` has no `__init__.py`.
 3. **Gitignore** — `git check-ignore -v` confirms `resources/`, `outputs/`
-   and `notebooks/*.executed.ipynb` ignored and `.docs/` tracked.
+   and `notebooks/*.executed.ipynb` ignored, and `.docs/` plus
+   `notebooks/README.md` tracked.
 4. **config-global.json** — parses, and every entry resolves on this machine:
    `python3 <module>/scripts/dm_link.py --check`.
 5. **progress.md** — tracked by git, and its gantt sections match the `##`
@@ -135,6 +245,11 @@ read-only unless asked to fix.
 7. **Environment** — `find <workspace> -name .venv` is empty; on a cluster
    the active env is `$HOME` or an Apptainer image.
 8. **third_party/** — matches `methods` in both directions.
+9. **Notebooks** — `python3 <module>/scripts/nb_index.py --check` exits 0.
+   It covers the three-digit name, the `#` heading, the `## Checks` boxes,
+   a fully ticked notebook with no `**Verdict:**`, asset pairing in both
+   directions, and a stale index. Also confirm `000-capabilities.ipynb`
+   exists once the repo has any other notebook.
 
 ## When a new file has nowhere to go
 
