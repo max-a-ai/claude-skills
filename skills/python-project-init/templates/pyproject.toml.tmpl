@@ -35,7 +35,8 @@ default-groups = ["dev", "debug"]
 line-length = 79
 target-version = "{{PYTHON_TAG}}"
 src = ["."]
-extend-exclude = ["third_party", "notebooks", "resources", "outputs"]
+# notebooks/ipynb-assets/*.py stays linted: it is real code.
+extend-exclude = ["third_party", "notebooks/*.ipynb", "resources", "outputs"]
 
 [tool.ruff.lint]
 select = [
@@ -56,7 +57,7 @@ quote-style = "double"
 [tool.mypy]
 python_version = "{{PYTHON_VERSION}}"
 strict = true
-files = ["{{MODULE_NAME}}", "tests"]
+files = ["{{MODULE_NAME}}", "tests", "notebooks/ipynb-assets"]
 warn_unused_ignores = true
 warn_redundant_casts = true
 
