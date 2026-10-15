@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Re-link skills, hooks and rules after every pull, so a skill added or renamed
+# in this repo cannot sit behind a stale plain copy under ~/.claude/skills.
+# install.sh is idempotent and force-replaces each target with a symlink.
+exec "$(git rev-parse --show-toplevel)/install.sh" >/dev/null

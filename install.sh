@@ -214,6 +214,16 @@ if [ "$RULES" = 1 ] && [ "$MODE" = link ] && [ -f "$REPO/rules/CLAUDE.md" ]; the
   fi
 fi
 
+# --- self-installing on pull -------------------------------------------------
+# core.hooksPath is per-clone local config, never carried by a push, so each
+# machine arms it here. Afterwards .githooks/post-merge re-runs this script on
+# every pull and a new or renamed skill cannot leave a stale copy behind.
+if [ "$DRY" != 1 ] && [ -d "$REPO/.githooks" ] &&
+   [ "$(git -C "$REPO" config --get core.hooksPath || true)" != ".githooks" ]; then
+  git -C "$REPO" config core.hooksPath .githooks
+  echo "→ core.hooksPath = .githooks  (pulls now re-link by themselves)"
+fi
+
 echo
 echo "${#names[@]} skills installed. Skipped: ${SKIP[*]:-none}"
-[ "$MODE" = link ] && echo "Update everything later with: git -C \"$REPO\" pull --recurse-submodules && \"$REPO/install.sh\""
+[ "$MODE" = link ] && echo "Update everything later with: git -C \"$REPO\" pull --recurse-submodules"
