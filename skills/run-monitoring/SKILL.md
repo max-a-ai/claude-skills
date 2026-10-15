@@ -1,6 +1,6 @@
 ---
 name: run-monitoring
-description: Watch long-running jobs you do not control (Slurm/cluster trainings, sweeps, evals) and report them as an HTML scoreboard artifact. Composes the `tick-it` skill (one hourly pass and its report layout) with `general-codebase` (the engineering rules any script you write must pass). Use when asked to monitor or babysit runs, resume monitoring from a handoff file, set up a recurring status tick, or report how training is progressing.
+description: Watch long-running jobs you do not control (Slurm/cluster trainings, sweeps, evals) and report them as an HTML scoreboard artifact. Composes the `tick-it` skill (one hourly pass and its report layout) with `general-codebase` (the engineering rules any script you write must pass). Use when asked to monitor or babysit runs, resume monitoring from a handoff or setting file, set up a recurring status tick, or report how training is progressing.
 ---
 
 # run-monitoring
@@ -13,7 +13,7 @@ page is the deliverable.
 
 | part | what it owns |
 |---|---|
-| this skill | the setup: handoff file, scoreboard layout, what counts as an action |
+| this skill | the setup: setting file, scoreboard layout, what counts as an action |
 | **`tick-it`** | one pass and its report layout — load it for every tick |
 | **`general-codebase`** | the engineering rules the generator script must pass before you call the work done |
 
@@ -21,18 +21,76 @@ The scoreboard generator is ordinary repo code: ruff-clean, typed, audited
 through `general-codebase` like anything else. Monitoring is not an excuse
 for a throwaway script — it runs every hour for weeks.
 
-## The handoff file is the source of truth
+## The setting file is the source of truth
 
-Every monitored project keeps a handoff file in its repo (`monitor_handoff.md`
-or whatever it is called there): what is running, which script drives each
-watch, what to do when a run finishes, and the artifact URL. Read it before
-acting and follow it literally — the user maintains it deliberately.
+Every monitored project has one setting file, centrally, so it can be pulled on
+any machine without the project checkout:
 
-Any change to the routine (a new run to watch, a new column, a new rule you
-discovered) goes into that file **in the same turn** you make it. A routine
+    ~/.claude-skills/monitoring-settings/<project>.md
+
+Named after the project and nothing else — no date in the filename. The file is
+a living setting, so a date would record when it was written when a reader wants
+to know what is true now, and two dated files for one project is how the stale
+one gets read. `updated:` in the front matter covers a reader who has only the
+file; `git log` covers the rest, and pulls any past state back:
+
+    git -C ~/.claude-skills log --oneline -- monitoring-settings/<project>.md
+    git -C ~/.claude-skills show <sha>:monitoring-settings/<project>.md
+
+Read it before acting and follow it literally — the user maintains it
+deliberately. Any change to the routine (a new run to watch, a new column, a
+rule you discovered) goes into it **in the same turn** you make it. A routine
 that lives only in a transcript is lost at the session boundary.
 
-No handoff file yet? Create one as you go, and say so.
+### What the setting holds, and what it must not
+
+It holds the **variable** half, in this order:
+
+0. a pointer to the ground set, never a copy of it
+1. where things are — repo, local path, cluster alias and path, tracker, artifact URL
+2. **main trainings** — the default bucket
+3. **ablation studies**
+4. further buckets this project needs (debug experiments, short tests)
+5. **evaluation parameters** — sources, metrics, the headline three, the submit line, thresholds
+6. **specified wishes** — what this user asked for on this project
+7. the routine's project-specific commands, the scoreboard options, known traps
+
+It must not hold the **invariant** half — tick on the hour, queue first,
+verbatim queue block, a sentinel on every probe, republish in place, never
+launch a job unasked. That is `tick-it` and this skill. A setting that repeats
+them will drift from them, and then the skill wins and the setting is wrong.
+
+It must not hold **live state** either. A running table rewritten every hour
+belongs in the project repo or the scratchpad, not in a tracked settings store
+where it would churn the history. Keep a live block in the project, regenerated
+between markers by the project's own script.
+
+### Classification: mains are the default
+
+Any run not explicitly listed in another bucket is a **main training**, and a
+main training gets the project's full evaluation when it finishes. Ablations,
+debug experiments and short tests have to be named. This is deliberate: the
+failure mode worth avoiding is a real candidate quietly treated as a throwaway,
+not the reverse.
+
+### No setting yet: draft, show, ask
+
+Do not invent a routine silently and do not tick. Discover first:
+
+- the cluster queue, if the project has one
+- the newest run directories and their `metrics.jsonl` / config
+- the tracker project the repo configures
+- any handoff, README or docs section describing runs
+
+Then write the draft setting, with every run found as a main training, the
+evaluation parameters filled from the newest run's metrics keys (each
+`val/<source>/<metric>` becomes a source and a metric, the first source is the
+headline), and the wishes section empty. Show it and ask before the first tick.
+**No evaluation job is ever submitted from a draft** — the classification is a
+guess until the user has corrected it.
+
+Correcting a draft is cheaper for the user than dictating one from nothing, but
+only if the guesses are visible. Say which runs you classified and from what.
 
 ## The scoreboard: one HTML artifact
 
@@ -116,7 +174,7 @@ completion. Act idempotently: check whether the follow-up work already
 exists (the eval JSON is on disk, the job is in the queue) before
 submitting anything, or you will resubmit finished jobs every half hour.
 
-## Report only what the handoff file asks for
+## Report only what the setting file asks for
 
 Per tick: the queue and one sentence — new completions, failures, or
 "nothing to act on" — in the layout `tick-it` fixes (clock headline, the
@@ -142,7 +200,7 @@ submit a training, refactor — ask first, in one line:
 
 and wait. Mixing two streams of work into one transcript is how two
 sessions start colliding in the same working tree. Running the tick,
-submitting an evaluation for a finished run and editing the handoff file
+submitting an evaluation for a finished run and editing the setting file
 are monitoring; they need no question.
 
 ## Leave the jobs alone

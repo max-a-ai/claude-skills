@@ -7,7 +7,30 @@ description: Run and report one monitoring tick on the full hour — collect clu
 
 One **tick** is one pass: collect, regenerate, republish, report. This skill
 owns the pass and its report layout. `run-monitoring` owns the setup around
-it (handoff file, scoreboard script, what counts as an action).
+it (the setting file, the scoreboard script, what counts as an action).
+
+## Step 0: find the setting, or there is nothing to tick
+
+A tick is always a tick *of a project*. Before collecting anything, find the
+setting that says which project and what its rules are:
+
+    ls ~/.claude-skills/monitoring-settings/*.md
+
+Match on the repository you are in — the directory name, or the `repo:` and
+`local:` keys in each file's front matter. One match is the setting: read it
+and run its routine. Everything project-specific comes from there; this skill
+contributes only the invariants below.
+
+**No match, and the repo has jobs running.** Do not invent a routine and do
+not tick. Find out what is actually running first — the cluster queue, the
+newest run directories, any wandb project the repo configures — then draft a
+setting from what you found, show it, and ask before the first tick. The draft
+rules are in `run-monitoring`; the short version is that every run found is a
+main training until the user says otherwise, and no evaluation job is ever
+submitted from a draft.
+
+**No match, and nothing is running.** Say so in one line and stop. An empty
+queue in a repo nobody asked you to watch is not a tick.
 
 ## Ticks land on the full hour
 
@@ -91,6 +114,6 @@ would otherwise delete. Never `force`.
 
 ## Leave the jobs alone
 
-Follow the handoff file's rules for finished runs (submitting a queued
+Follow the setting file's rules for finished runs (submitting a queued
 evaluation is routine). Launching, cancelling, resubmitting or requeueing a
 training needs the user's word every time, however stuck it looks.
