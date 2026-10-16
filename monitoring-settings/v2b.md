@@ -40,6 +40,10 @@ skill wins.
 4. HEAL env on helma: `outputs/logs/helma-bootstrap.log` ends in `HEAL-ENV-DONE`.
 5. Job on helma: `sbatch v2b/slurm/helma.sbatch configs/s8e-heal-m1-waymo-3cls-init.yaml s8e-heal-m1-waymo-3cls-init` from the checkout, submitted by this chat once 3 and 4 hold (the user's word: "start on helma as soon as ready"). Resume across the 24 h limit with `RESUME=1 sbatch ...` (also pre-authorised by that instruction).
 
+## 2b. State 2026-10-16 17:22
+
+Export done 16:32 (8 069 validate / 31 880 train frames). Shards packed on cluster2 (validate 15.3 GB, train 60.4 GB, LiDAR-only) and verified on helma under `shards/waymo-opv2v/{validate,train}`. HEAL env done. **Job 1036386** (`s8e-heal-m1-waymo-3cls-init`) submitted 17:22, pending on priority. Workspace still at 22 h / 3 extensions, user asked to `ws_extend bev-v2b 90`.
+
 ## 3. Mains and ablations
 
 Main: `s8e-heal-m1-waymo-3cls-init` (20 epochs, eval every epoch, AP@0.5 per class in the log and wandb). Later: `s8f-heal-m1-nusc-av2-waymo-3cls` needs nuScenes and Argoverse shards first.
