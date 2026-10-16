@@ -3,7 +3,7 @@ project: v2b
 repo: https://github.com/max-a-ai/v2b
 local: ~/Documents/v2b
 cluster: helma (this routine), cluster2 (watched by the bev-v2b-monitoring chat)
-status: active
+status: closed 2026-10-16 21:30 (s8e finished; reopen for s8f)
 updated: 2026-10-16
 ---
 
@@ -43,6 +43,10 @@ skill wins.
 ## 2b. State 2026-10-16 17:22
 
 Export done 16:32 (8 069 validate / 31 880 train frames). Shards packed on cluster2 (validate 15.3 GB, train 60.4 GB, LiDAR-only) and verified on helma under `shards/waymo-opv2v/{validate,train}`. HEAL env done. **Job 1036386** (`s8e-heal-m1-waymo-3cls-init`) submitted 17:22, pending on priority. Workspace still at 22 h / 3 extensions, user asked to `ws_extend bev-v2b 90`.
+
+## 2c. Closed 2026-10-16 21:30
+
+Job 1036386 completed 20:50 (20 epochs, 3 h 11 min). Final AP@0.5 car 0.776 / pedestrian 0.366 / bicycle 0.088. Run copied to the NAS `v2b-outputs/s8e-heal-m1-waymo-3cls-init/`. Hourly cron removed; nothing is running on helma for v2b.
 
 ## 3. Mains and ablations
 
