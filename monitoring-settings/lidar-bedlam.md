@@ -56,6 +56,7 @@ training gets the full-set eval (section 6).
 | `m-boxhead` / `m-nobox` / `m-boxhead-kp` / `m-gate-none` / `m-chamfer` / `m-prior` (-000) | jobs 880923-880928; the six 15k mains under the box fix on one split (`configs/m_*.yaml`); resumable with `RUN_NAME=<run>` and `EXTRA_SET="optim.max_steps=N"` | val plots only; report Waymo MPJPE, transl, mAP |
 | `m-boxhead-v3-000` | job 883008; run 7: box head on pseudo-GT v3 labels (`real/v1_pseudo3`, fitter with hip-centre term + joint offsets), same split as the six mains | val plots only; compare with `m-boxhead-000` and `m-boxhead-kp-000` |
 | `b-full-mix80-000` | finished and fully evaluated | — |
+| `m-modality-dropout-000` | NOT YET SUBMITTED (2026-10-16): handover `.docs/runs/m-modality-dropout.json`, config `configs/m_modality_dropout.yaml` (commit `8b635e1`, pull first); m-boxhead-v3 recipe plus sensor-modality dropout (image or points removed per sample, p = 0.3 each, never both) so one model serves camera+LiDAR, camera-only and LiDAR-only; nine val rows: `waymo_val` / `sloper4d_test` / `threedpw_test` plus `*_img` (image only) and `*_pts` (points only); submit with `sbatch --job-name=m-modality-dropout --export=ALL,CONFIG=configs/m_modality_dropout.yaml lidar_bedlam/slurm/train.sbatch` | full-set eval as a main; report the nine rows against `m-boxhead-v3-000` and the single-sensor ablations `v2-abl-image-only` / `v2-abl-lidar-only` |
 
 All six m-series mains and `m-boxhead-v3-000` finished on 2026-09-22.
 **`m-boxhead-kp-000` (keypoints only) wins Waymo at 59.8 mm**, with
