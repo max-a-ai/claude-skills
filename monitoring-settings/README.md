@@ -37,3 +37,4 @@ A live project never has a file there.
 | project | cluster | status | setting |
 |---|---|---|---|
 | lidar-bedlam | helma (NHR@FAU) | active | [lidar-bedlam.md](lidar-bedlam.md) |
+| v2b | helma (NHR@FAU) + cluster2 | active | [v2b.md](v2b.md) |
