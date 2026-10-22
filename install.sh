@@ -33,6 +33,7 @@ SETS=(
   "mattpocock:$REPO/third_party/mattpocock-skills/skills/productivity/*"
   "research:$REPO/third_party/research-skills/plugins/research-collaborator/skills/*"
   "research:$REPO/third_party/research-skills/plugins/results-to-slides/skills/*"
+  "academic:$REPO/third_party/academic-research-skills/skills/*"
 )
 
 # Skills to leave out. Add or remove a line and re-run.

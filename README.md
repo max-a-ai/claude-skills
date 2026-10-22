@@ -2,13 +2,14 @@
 
 One skill repository, cloned once, available in every project.
 
-Combines three sources:
+Combines four sources:
 
 | Set | Source | Contents |
 |---|---|---|
 | `skills/` | mine | 14 private skills — Python/ML workflow (ruff, mypy, wandb, project init, repo layout, HPC data management, run monitoring, paper notes, graphify, git-it, the standing-rules auditor) |
 | `third_party/mattpocock-skills/` | [mattpocock/skills](https://github.com/mattpocock/skills) (submodule) | The engineering loop — grilling, spec/ticket flows, TDD, domain modelling, diagnosis |
 | `third_party/research-skills/` | [saidwivedi/research-skills](https://github.com/saidwivedi/research-skills) (submodule) | `research-collaborator` (hypothesis falsification, 191 silent-bug patterns) and `results-to-slides` |
+| `third_party/academic-research-skills/` | [Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills) (submodule, CC BY-NC 4.0) | `academic-paper`, `academic-paper-reviewer`, `academic-pipeline`, `deep-research`, `sr-screener` — research → write → review → revise pipeline |
 
 Plus `rules/CLAUDE.md` — standing rules that must hold on every turn, not just
 when a skill is invoked.
@@ -24,7 +25,7 @@ That is the whole setup, on any machine. It installs three things into `~/.claud
 
 | | |
 |---|---|
-| `~/.claude/skills/` | 40 skills, symlinked back here |
+| `~/.claude/skills/` | 45 skills, symlinked back here |
 | `~/.claude/CLAUDE.md` | standing rules, symlinked to `rules/CLAUDE.md` |
 | `~/.claude/hooks/` + `hooks` entries in `settings.json` | the four enforcement hooks |
 

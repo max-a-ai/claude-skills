@@ -4,3 +4,6 @@
 [submodule "third_party/research-skills"]
 	path = third_party/research-skills
 	url = https://github.com/saidwivedi/research-skills.git
+[submodule "third_party/academic-research-skills"]
+	path = third_party/academic-research-skills
+	url = https://github.com/imbad0202/academic-research-skills.git
