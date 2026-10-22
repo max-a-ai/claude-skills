@@ -133,6 +133,13 @@ third level (the modules inside `<module>/data/`, the contents of
    timetable at the top, `# Log` in the middle, `# Todos` at the bottom,
    all three using the **same section names**), `.docs/figures/`,
    `.docs/latex-draft/`, `.docs/runs/` with `.gitkeep`.
+   Copy [templates/latex-draft/bib/](templates/latex-draft/bib/) into
+   `.docs/latex-draft/bib/`: `bib_long.def` (full venue names) and
+   `bib_short.def` (abbreviated), the same macro set (`\cvpr`, `\iv`,
+   ...) used as `booktitle = \cvpr` in the `.bib`. **Rule: always
+   start with `\input{bib/bib_long.def}`; switch to `bib_short.def`
+   only when the paper must shrink to meet the page limit.** Keep both
+   files' macro sets identical so the swap never breaks the build.
 8. **Create `config-global.json`** from
    [../general-codebase-structure/templates/config-global.json.tmpl](../general-codebase-structure/templates/config-global.json.tmpl),
    substituting `{{PROJECT_NAME}}`. Keep the `_example_` entries as

@@ -55,11 +55,16 @@ The `dm_*` scripts that build the gitignored part live in [[data-management]].
 └── .docs/
     ├── progress.md              COMMITTED — the single source of truth
     ├── figures/                 curated images / lidar renders
-    ├── latex-draft/             empty, ready for a paper
+    ├── latex-draft/             the paper; bib/bib_long.def + bib/bib_short.def (start with bib_long)
     └── runs/<run-name>/         COMMITTED — runs promoted out of outputs/
 ```
 
 ### Rules the tree encodes
+
+0. **Bibliography venue macros:** `.docs/latex-draft/bib/` holds
+   `bib_long.def` and `bib_short.def` (from `python-project-init/templates/
+   latex-draft/bib/`). A paper always starts with `bib_long.def`; it switches
+   to `bib_short.def` only to meet the page limit. Both define the same macros.
 
 1. **All code lives in `<module>/`** — one flat package named after the
    repo (`-` → `_`), no `src/`, never loose `.py` beside `pyproject.toml`.
