@@ -112,6 +112,12 @@ tool passing `url`. On a refused publish, read the live version in full,
 merge onto it, publish again — another session may have added a column you
 would otherwise delete. Never `force`.
 
+The page follows `run-monitoring`'s **page rules**: dated header (updated,
+per-site collection times, commit), overall best with the pinned baseline
+and per-cell green ↑ / red ↓ deltas on top, short names, click-open
+descriptions, sortable columns. A page that misses one is fixed in the
+script before the tick is reported.
+
 ## Leave the jobs alone
 
 Follow the setting file's rules for finished runs (submitting a queued

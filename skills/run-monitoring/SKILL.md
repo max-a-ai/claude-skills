@@ -113,6 +113,36 @@ Publish with the Artifact tool, passing `url` so it updates in place. Read
 the live version first; on a refused publish, read it again and merge onto
 it. Never `force` — that discards whatever someone else published.
 
+### Page rules (every HTML report)
+
+Every page a monitoring script renders follows these, so a reader opening
+it cold knows at once what it is, how fresh it is, and where it stands:
+
+1. **A dated header first.** Title, then one line: *updated* (render time,
+   local with timezone **and** UTC), *data collected* per source or site
+   (each with its own time, so a stale site is visible), and the commit of
+   the script that rendered it. A page without a date is not published.
+2. **Overall best on top, with the baseline in it.** The first table is
+   the best few runs on the headline metric, with the baseline as its
+   first row, pinned (it stays first when sorting). Every metric cell of
+   the other rows shows its value with a small delta to the baseline:
+   green ↑ when better, red ↓ when worse (for an error metric, lower is
+   better: colour by better/worse, arrow by the value's direction). Say
+   in the legend what "best" is ranked on and any guard (e.g. the second
+   metric may not collapse).
+3. **Short run names.** Show a short ID (a cell ID such as `s15-09`, or
+   the series prefix) and keep the full name in a tooltip and in the
+   row's detail.
+4. **Rows open their description.** Clicking a row shows the full name,
+   what each part of the name means, the run's own description (the
+   spec's header comment) and its settings. Free-text notes live there,
+   not in a table column.
+5. **Sortable columns.** Every table sorts by a clicked header (toggle
+   ▼/▲), detail rows travel with their row, pinned rows stay on top.
+6. **Theme-aware and phone-safe**, per the artifact page contract: colour
+   tokens for light and dark, wide tables in their own horizontal
+   scroller.
+
 ### The running table
 
 One row per job actually in the queue. Columns: step, target (name which
