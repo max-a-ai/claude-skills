@@ -49,6 +49,8 @@ Parallel helma jobs need 4b0bbf4 or later (own `$TMPDIR/data` link tree via `V2B
 
 Reruns of the attn -h04 cells (S15-08/16/24/32/40): single-cell jobs 1118136-1118140, each `afterany` its -h04 job (1116401/03/05/07, 1117963).
 
+From e051196 a claim holds a per-spec lock (`outputs/queue/locks/<spec>`), so a spec never trains twice. Eval-only tasks: `v2b-queue.py add <spec> --eval-only`; `v2b-queue.py requeue <failed task>` only with Max's word. S15-39 eval: one-task queue `outputs/queue-eval`, worker 1126138.
+
 ## 2d. S17 LitePT ablations (queued 2026-10-24 02:30)
 
 13 cells (`configs/s17*`, grid floor, attention stages from `v2b/train/bev_attention.py`) in 4 `helma-batch.sbatch grid` jobs 1118119-1118122, each `afterany` one 0.8 m S15 job (1116400/02/04/06), so they start when those end (~15:45). Control: S15-09. Watch the first epochs of S17j (C-C-A-A) and S17l (conv E4): both spiked transiently in the smoke test. Poisson jobs are 1117962/1117963 (resubmitted after the Open3D fix).
