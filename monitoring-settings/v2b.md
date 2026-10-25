@@ -59,6 +59,10 @@ From e051196 a claim holds a per-spec lock (`outputs/queue/locks/<spec>`), so a 
 
 Pending work lives in helma's `outputs/queue/` (todo/running/done/failed), pulled by `helma-worker.sbatch` jobs; check it each tick with `ssh helma 'cd ~/v2b && python3 v2b/scripts/v2b-queue.py list'` and report the counts as deltas. Workers 1118746-1118755 start as the S15 jobs end. The S17 jobs 1118119-22 and the rerun jobs 1118136-40 were cancelled (pending, Max's word) and their trainings queued. A training in failed/ is reported, not requeued, without Max's word. Worker log `outputs/logs/v2b-worker-<job>.out`.
 
+## 2f. Develop handover fb5d2c8 (started 2026-10-25 15:00, Max's go)
+
+cluster2: V2X-Real cooperative baselines s10a/b/c (3092-3094, 20 epochs; old dirs kept in `outputs/superseded/<run>-try1`), then the full-set eval of each under its own name (routine) and its capabilities line. CooPre chain 3095 pretrain, 3096 ft-scratch, 3097 ft-pre (afterok 3095), 3098/3099 evals; rows from `outputs/coopre/<run>/eval.yaml`, protocol "CooPre's own eval". Capabilities 3100-3134 (`outputs/<run>/capabilities.json`, log `logs/cap-<job>.out`); their ms are taken on a shared node, not the idle benchmark. helma queue: s18a (worker 1129586, Poisson derive first), s19a (`--no-eval`, pretraining: watch train/recon_count, train/recon_profile, train/masked_cells ~1200 per batch; bestval = lowest val/loss), s19c (control). After s19a is done: `v2b-queue.py add s19b-heal-m1-waymo-3cls-attn-rebase3-ft-pretrain` (expect "280/286 tensors adopted"). Not started: s15a/s15b (CodeFilling still broken), s19d/s19e (schwind split on neither site).
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
