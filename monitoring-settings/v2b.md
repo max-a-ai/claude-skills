@@ -67,6 +67,10 @@ cluster2: V2X-Real cooperative baselines s10a/b/c (3092-3094, 20 epochs; old dir
 
 Eight cells on Poisson + 0.8 m head in helma's queue, workers 1129812-1129815 (plus the three of 2f): s21a/b S17e backbone with attn / mean+max pooling (controls S15-36 / S15-34), s21c S17i backbone with attn, s21d-g repeats of S15-36 and S15-34 (spread), s21h S15-36 for 40 epochs. Each worker derives the Poisson split first (3-5 h). Epoch 0 of the warm-started cells must read near the S15 Poisson cells' epoch 0; s21h's row is its epoch-40 checkpoint. Report the pooling and backbone verdicts against the repeat spread, not against one run.
 
+## 2h. Table 2, V2X-Real (develop handover 2026-10-26)
+
+Static rule: when a row lands, copy ped / car / bic AP@0.5, mAP@0.5, params, ms and message bytes into `.docs/tables/table2-v2xreal.md` with the date, commit, never touch the row again. Chain (local background task): cluster2 `dm_pack` of v2xreal-opv2v (log `logs/pack-v2xreal.log`) -> `dm_push.sh` to helma shards -> one-off job `derive-v2xreal-poisson` (log `outputs/logs/derive-v2xreal-poisson-<job>.out`, ends `DERIVE-PACK-DONE`). Then submit the handover's s20z (eval-only) and s20a-d lines with `helma.sbatch`, own-name evals, capabilities on cluster2. s10a-c rows come from cluster2 3092-3094. s16b/c/d wait for a schwind OPV2V export (none exists).
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
