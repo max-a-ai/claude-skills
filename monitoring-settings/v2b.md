@@ -71,6 +71,10 @@ Eight cells on Poisson + 0.8 m head in helma's queue, workers 1129812-1129815 (p
 
 Static rule: when a row lands, copy ped / car / bic AP@0.5, mAP@0.5, params, ms and message bytes into `.docs/tables/table2-v2xreal.md` with the date, commit, never touch the row again. Chain (local background task): cluster2 `dm_pack` of v2xreal-opv2v (log `logs/pack-v2xreal.log`) -> `dm_push.sh` to helma shards -> one-off job `derive-v2xreal-poisson` (log `outputs/logs/derive-v2xreal-poisson-<job>.out`, ends `DERIVE-PACK-DONE`). Then submit the handover's s20z (eval-only) and s20a-d lines with `helma.sbatch`, own-name evals, capabilities on cluster2. s10a-c rows come from cluster2 3092-3094. s16b/c/d wait for a schwind OPV2V export (none exists).
 
+## 2i. DDP validation s22a (2026-10-25 21:30)
+
+Chain on helma: 1132901 derive + pack `shards/waymo-opv2v-rebase-poisson` (log `outputs/logs/derive-waymo-poisson-<job>.out`, ends `DERIVE-PACK-DONE`), 1132902 `helma-ddp.sbatch` s22a on 4 H100 (log `outputs/logs/v2b-ddp-<job>.out`; must print "DDP over 4 GPUs, 2 per GPU, SyncBatchNorm"), 1132903 its own-name full-set eval. Pass: full-set pedestrian / car within +-0.007 of 0.463 / 0.865; report minutes per epoch against S15-36's 1-GPU log. Only after a pass: single long runs on `helma-ddp.sbatch`; S21 repeats and s19b stay on 1 GPU.
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
