@@ -63,6 +63,10 @@ Pending work lives in helma's `outputs/queue/` (todo/running/done/failed), pulle
 
 cluster2: V2X-Real cooperative baselines s10a/b/c (3092-3094, 20 epochs; old dirs kept in `outputs/superseded/<run>-try1`), then the full-set eval of each under its own name (routine) and its capabilities line. CooPre chain 3095 pretrain, 3096 ft-scratch, 3097 ft-pre (afterok 3095), 3098/3099 evals; rows from `outputs/coopre/<run>/eval.yaml`, protocol "CooPre's own eval". Capabilities 3100-3134 (`outputs/<run>/capabilities.json`, log `logs/cap-<job>.out`); their ms are taken on a shared node, not the idle benchmark. helma queue: s18a (worker 1129586, Poisson derive first), s19a (`--no-eval`, pretraining: watch train/recon_count, train/recon_profile, train/masked_cells ~1200 per batch; bestval = lowest val/loss), s19c (control). After s19a is done: `v2b-queue.py add s19b-heal-m1-waymo-3cls-attn-rebase3-ft-pretrain` (expect "280/286 tensors adopted"). Not started: s15a/s15b (CodeFilling still broken), s19d/s19e (schwind split on neither site).
 
+## 2g. S21 grid (queued 2026-10-25 16:10, Max's go)
+
+Eight cells on Poisson + 0.8 m head in helma's queue, workers 1129812-1129815 (plus the three of 2f): s21a/b S17e backbone with attn / mean+max pooling (controls S15-36 / S15-34), s21c S17i backbone with attn, s21d-g repeats of S15-36 and S15-34 (spread), s21h S15-36 for 40 epochs. Each worker derives the Poisson split first (3-5 h). Epoch 0 of the warm-started cells must read near the S15 Poisson cells' epoch 0; s21h's row is its epoch-40 checkpoint. Report the pooling and backbone verdicts against the repeat spread, not against one run.
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
