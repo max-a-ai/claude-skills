@@ -81,6 +81,8 @@ The log then notes `eval of the run's checkpoint at epoch N` and `outputs/<run>/
 
 ## 4. Rules
 
+Times on the scoreboard page and in tick headlines are GMT+1 (Max, 2026-10-25); the snapshots keep `collected_utc` in UTC and the page converts (30c2aa1). Ticks land on the full GMT+1 hour.
+
 Never cancel or resubmit a training without Max; evaluations are routine. Progress log `.docs/progress.md`, commit one line `docs: ...`, never push. Push-notify on a finished or failed run.
 
 ## 5. Queue commands
