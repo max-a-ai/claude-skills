@@ -74,6 +74,7 @@ Static rule: when a row lands, copy ped / car / bic AP@0.5, mAP@0.5, params, ms 
 ## 2i. DDP validation s22a (2026-10-25 21:30)
 
 Chain on helma: 1132901 derive + pack `shards/waymo-opv2v-rebase-poisson` (log `outputs/logs/derive-waymo-poisson-<job>.out`, ends `DERIVE-PACK-DONE`), 1132902 `helma-ddp.sbatch` s22a on 4 H100 (log `outputs/logs/v2b-ddp-<job>.out`; must print "DDP over 4 GPUs, 2 per GPU, SyncBatchNorm"), 1132903 its own-name full-set eval. Pass: full-set pedestrian / car within +-0.007 of 0.463 / 0.865; report minutes per epoch against S15-36's 1-GPU log. Only after a pass: single long runs on `helma-ddp.sbatch`; S21 repeats and s19b stay on 1 GPU.
+**2026-10-26 01:00: s22a failed** (NCCL timeout after epoch 0, mismatched collective on rank 0); 1132903 cancelled. Nothing runs on `helma-ddp.sbatch` until develop fixes it and Max gives the word.
 
 ## 3. Full-set evaluation of a finished training (routine)
 
