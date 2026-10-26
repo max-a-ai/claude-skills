@@ -78,6 +78,8 @@ Chain on helma: 1132901 derive + pack `shards/waymo-opv2v-rebase-poisson` (log `
 
 ## 2j. S24 (queued 2026-10-26 08:00, Max's go)
 
+**08:30: moved to 4-GPU `helma-ddp.sbatch` jobs** (Max): s22a 1141447 / eval 1141448, s24d 1141449 / 1141450, s24b 1141469 -> s24c 1141470 / eval 1141471, grid pack 1141452 -> s24a 1141453 / eval 1141454 (all afterok). The queue tasks of the 1-GPU tries are in `failed/` (moved, not failed); s24c is chained, no manual add. Report minutes per epoch (wandb `_runtime`) against the 1-GPU reference once epochs land.
+
 helma queue, workers 1141406-1141408: s24a (s19c for 35 epochs; compare s19b 0.467 / s19c 0.441), s24b (`--no-eval`, pretraining on Poisson; watch train/recon_count, train/recon_profile, train/masked_cells), s24d (A-A-A for 40 epochs; compare s21c, s21h). **When s24b is done:** `v2b-queue.py add s24c-heal-m1-waymo-3cls-attn-poisson-ft-pretrain-e40 --est-h 8` (expect ~284/290 tensors adopted; compare s21h 0.479 / 0.871).
 
 ## 3. Full-set evaluation of a finished training (routine)
