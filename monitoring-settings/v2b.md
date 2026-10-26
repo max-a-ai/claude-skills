@@ -92,6 +92,8 @@ The log then notes `eval of the run's checkpoint at epoch N` and `outputs/<run>/
 
 ## 4. Rules
 
+The scoreboard opens with **Main results** (8f89108): the paper's quantitative tables, Waymo (baselines, then ours step by step against s8e) and V2X-Real (each fusion as published, then on our agent). Rows are the `MAIN_WAYMO` / `MAIN_V2XREAL` lists in `v2b-scoreboard.py`; when a new best or a final run lands, add it there (a code change, audited) rather than relying on the best table.
+
 Times on the scoreboard page and in tick headlines are GMT+1 (Max, 2026-10-25); the snapshots keep `collected_utc` in UTC and the page converts (30c2aa1). Ticks land on the full GMT+1 hour.
 
 Never cancel or resubmit a training without Max; evaluations are routine. Progress log `.docs/progress.md`, commit one line `docs: ...`, never push. Push-notify on a finished or failed run.
