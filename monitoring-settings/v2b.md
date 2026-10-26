@@ -76,9 +76,9 @@ Static rule: when a row lands, copy ped / car / bic AP@0.5, mAP@0.5, params, ms 
 Chain on helma: 1132901 derive + pack `shards/waymo-opv2v-rebase-poisson` (log `outputs/logs/derive-waymo-poisson-<job>.out`, ends `DERIVE-PACK-DONE`), 1132902 `helma-ddp.sbatch` s22a on 4 H100 (log `outputs/logs/v2b-ddp-<job>.out`; must print "DDP over 4 GPUs, 2 per GPU, SyncBatchNorm"), 1132903 its own-name full-set eval. Pass: full-set pedestrian / car within +-0.007 of 0.463 / 0.865; report minutes per epoch against S15-36's 1-GPU log. Only after a pass: single long runs on `helma-ddp.sbatch`; S21 repeats and s19b stay on 1 GPU.
 **2026-10-26 01:00: s22a failed** (NCCL timeout after epoch 0, mismatched collective on rank 0); 1132903 cancelled. Nothing runs on `helma-ddp.sbatch` until develop fixes it and Max gives the word.
 
-## 2j. S24 (queued 2026-10-26 08:00, Max's go)
+## 2j. S24 (queued 2026-10-26 07:40, Max's go)
 
-**08:30: moved to 4-GPU `helma-ddp.sbatch` jobs** (Max): s22a 1141447 / eval 1141448, s24d 1141449 / 1141450, s24b 1141469 -> s24c 1141470 / eval 1141471, grid pack 1141452 -> s24a 1141453 / eval 1141454 (all afterok). The queue tasks of the 1-GPU tries are in `failed/` (moved, not failed); s24c is chained, no manual add. Report minutes per epoch (wandb `_runtime`) against the 1-GPU reference once epochs land.
+**08:05: moved to 4-GPU `helma-ddp.sbatch` jobs** (Max): s22a 1141447 / eval 1141448, s24d 1141449 / 1141450, s24b 1141469 -> s24c 1141470 / eval 1141471, grid pack 1141452 -> s24a 1141453 / eval 1141454 (all afterok). The queue tasks of the 1-GPU tries are in `failed/` (moved, not failed); s24c is chained, no manual add. Report minutes per epoch (wandb `_runtime`) against the 1-GPU reference once epochs land.
 
 helma queue, workers 1141406-1141408: s24a (s19c for 35 epochs; compare s19b 0.467 / s19c 0.441), s24b (`--no-eval`, pretraining on Poisson; watch train/recon_count, train/recon_profile, train/masked_cells), s24d (A-A-A for 40 epochs; compare s21c, s21h). **When s24b is done:** `v2b-queue.py add s24c-heal-m1-waymo-3cls-attn-poisson-ft-pretrain-e40 --est-h 8` (expect ~284/290 tensors adopted; compare s21h 0.479 / 0.871).
 
