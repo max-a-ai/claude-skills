@@ -82,6 +82,10 @@ Chain on helma: 1132901 derive + pack `shards/waymo-opv2v-rebase-poisson` (log `
 
 helma queue, workers 1141406-1141408: s24a (s19c for 35 epochs; compare s19b 0.467 / s19c 0.441), s24b (`--no-eval`, pretraining on Poisson; watch train/recon_count, train/recon_profile, train/masked_cells), s24d (A-A-A for 40 epochs; compare s21c, s21h). **When s24b is done:** `v2b-queue.py add s24c-heal-m1-waymo-3cls-attn-poisson-ft-pretrain-e40 --est-h 8` (expect ~284/290 tensors adopted; compare s21h 0.479 / 0.871).
 
+## 2k. S28 (develop, cluster2, from 2026-10-28)
+
+`cluster2-s28.sh` chains s28a-h pretraining -> fine-tune (afterok) and the from-scratch control s28z (4 epochs, `subset: 0.5`, grid floor) but no eval: when a fine-tune or s28z finishes, submit its own-name full-set eval (`EXTRA_ARGS="--eval-only --ap-samples -1" sbatch --job-name=eval-<run> v2b/slurm/cluster2.sbatch configs/<run>.yaml <run>`), routine. s28z eval: 3994.
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
