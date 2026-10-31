@@ -2,9 +2,9 @@
 project: v2b
 repo: https://github.com/max-a-ai/v2b
 local: ~/Documents/v2b
-cluster: cluster2 (S11/S12 arms) and helma (S13 pooling arms)
+sites: cluster2, helma
 status: open 2026-10-23 (handover from the main v2b chat)
-updated: 2026-10-23
+updated: 2026-10-31
 ---
 
 # Monitoring setting — v2b, Waymo ablations on cluster2 and helma
@@ -16,9 +16,30 @@ this file held before is in git history.
 
 ## 0. Ground set — not repeated here
 
-`tick-it` owns the pass and the layout, `run-monitoring` the setup,
-`general-codebase` any script. If this file contradicts a skill, the
-skill wins.
+`tick-it` owns the pass and the layout, `run-monitoring` the setup and
+`run-monitoring/defaults.md` everything every scoreboard does (queue on top,
+folding, confirmation boxes, plots and their settings, the tick order, what
+is routine); `general-codebase` any script. This file holds only what is
+specific to v2b. If it contradicts a skill, the skill wins.
+
+## 0a. Custom: metrics and tables
+
+- **Metrics**: BEV AP per class at IoU 0.3 / 0.5 / 0.7, classes
+  pedestrian / car / bicycle (truck on the old V2X-Real rows), mAP = mean of
+  the three classes per IoU; higher is better. Headline: pedestrian AP@0.5.
+  Per-epoch series: the trainer's subset validation (`val/ap_bev@<iou>/<class>`
+  in `outputs/logs/v2b-*.out`); full set: `outputs/<run>/eval.json`. Also
+  shown, not plotted: params, ms / sweep, message / frame (`capabilities.json`).
+- **Tables** (`PAPER_TITLES`, `paper_tables`, `TRANSFER_BLOCKS` in
+  `v2b/scripts/v2b-scoreboard.py`): paper tables A (Waymo validation), B
+  (V2X-Real V2V, benchmark protocol), C (V2B zero-shot), D (ours and its
+  levers), X (transferability, V2X-Real-only sources); then Table 1-3 per
+  dataset, the subset table, published rows. Competitors first, then ours,
+  each of our values with its change to the best competitor value of the block.
+- **Plot scopes**: global; queue; paper -> paper/a, b, c, d, x. Default
+  three columns: ped@0.3, ped@0.5, ped@0.7. Stored in `.docs/scoreboard-plots.json`.
+- **Store**: artifact slug `cbc3289e-2d59-470e-bd87-10ffdb85e610`
+  (capabilities db + user): `acks/*`, `plots/*`.
 
 ## 1. Where things are
 
@@ -32,6 +53,8 @@ skill wins.
 | scoreboard | https://claude.ai/artifact/SAN6KYYFJmAnkGUrfgEM6f |
 
 Scoreboard each tick: `ssh cluster2 'cd ~/v2b && python3 v2b/scripts/v2b-scoreboard.py collect --out outputs/scoreboard.json'`, then fetch with `ssh cluster2 'cat ~/v2b/outputs/scoreboard.json'` (scp of the NAS symlink returns 0 bytes), `python3 v2b/scripts/v2b-scoreboard.py render --in <json> --out <html>`, publish with `url`. The collector sees cluster2 only: helma rows come from reading helma's logs until a finished helma run is copied to the NAS.
+
+Store fold-in per defaults.md section 4: `.venv/bin/python v2b/scripts/v2b-scoreboard.py ack <run ...>` (every `run` of `acks`) and `... plots SCOPE=a,b,c ...` (every `plots` doc with cols; scope ids use `~` for `/`). Never seed acks again (`--seed-from` ran once on 2026-10-31 with 148 results); never delete the acks docs. Render: `.venv/bin/python v2b/scripts/v2b-scoreboard.py render --in <cluster2.json> <helma.json> --queue cluster2=<dump> helma=<dump> --out <html>`.
 
 ## 2. Runs
 
@@ -86,6 +109,33 @@ helma queue, workers 1141406-1141408: s24a (s19c for 35 epochs; compare s19b 0.4
 
 `cluster2-s28.sh` chains s28a-h pretraining -> fine-tune (afterok) and the from-scratch control s28z (4 epochs, `subset: 0.5`, grid floor) but no eval: when a fine-tune or s28z finishes, submit its own-name full-set eval (`EXTRA_ARGS="--eval-only --ap-samples -1" sbatch --job-name=eval-<run> v2b/slurm/cluster2.sbatch configs/<run>.yaml <run>`), routine. s28z eval: 3994.
 
+## 2l. S29 dark-box evals and S30 fusion trunk (develop, from 2026-10-29 14:50)
+
+Launched by develop (c8fd80b, 96963d9), not here. cluster2: s29c/d/e (4025-4027) are eval-only rows (dark-box filter at 0.10/0.12 on S15-10, 0.10 on s8e); compare each with its source row. helma: smoke-fusion-trunk 1176179 gates s30a-f (1176180-85, afterok). s30a-c = AttFuse / F-Cooper / V2X-ViT with the single-agent trunk, ours (attn + Poisson), s30d-f = the same, HEAL (raw); V2X-Real VC, benchmark protocol. Pair a vs d, b vs e, c vs f. Whether they need a separate eval job is unconfirmed: check the specs before submitting one.
+2026-10-29 17:00: s29c-e done (filter costs ped 0.03-0.06, car unchanged). Smoke passed; s30a/b/d/e running; s30c/f (V2X-ViT) failed on a 4x cls/anchor size mismatch, and CooPre eval-pre 1169453 failed on a stale /tmp/1169452.helma dataset path in the run config. Both handed to develop; resubmit nothing for them until develop's fix lands and Max says so.
+s30 trains with per-epoch val only, so each finished s30 run gets its own-name full-set eval on helma (routine, `bash -lc`, `helma.sbatch`, section 3): s30a 1177950, s30d 1177953 (2026-10-29 18:00, done 18:35); s30b 1178281, s30e 1178282 (19:00).
+2026-10-30 00:00: develop fixed both (15977b7, 4de0c17) and resubmitted: CooPre eval-pre 1179930 done (CooPre's own protocol, all ranges vehicle / ped / truck 0.672 / 0.302 / 0.542, mAP 0.505); s30c 1179931, s30f 1179932 rerun. When each finishes, submit its own-name full-set eval (routine): s30c 1184634, s30f 1184635 (2026-10-30 10:04).
+
+2026-10-30 19:00: s30c/f full-set done (ours 0.488 mAP vs HEAL 0.379); all three s30 pairs closed.
+
+## 2m. CooPre second fusions, CooPre Waymo chain, S24e and S31 (develop, helma, from 2026-10-30 ~15:00)
+
+Launched by develop (6c30a32, ad38a9b, 22ef4b0, d343dfe), not here. CooPre chains (coopre-waymo-*, coopre-v2v-* incl. -fcooper-/-v2xvit-) carry their own eval jobs as afterok dependencies: do not submit evals for them. s24e and s31a-h are v2b trainings: when one finishes without its own eval.json, section 3 applies. Never cancel or resubmit any of them without Max's word.
+
+2026-10-31 01:00: s24e, s31a, s31b, s31c done; own-name full-set evals 1188142, 1188139, 1188140, 1188141 (routine).
+
+2026-10-31 02:00: evals done; s24e 0.499 / 0.866 / 0.078 (ped / car / bic), s31a-c in progress.md. s26h runs on cluster2 as 4086 (develop).
+
+2026-10-31 11:00: s31d-h done; own-name full-set evals s31d 1189562, s31e 1189563, s31f 1189564, s31g 1189565, s31h 1189566 (routine). Cron 7076d88b hourly from 11:00.
+
+2026-10-31 13:00: develop launched s24f 1189668 (raw-floor pretraining, done 13:08, no eval) and s24g 1189669 (fine-tune, 20 ep). When s24g finishes: own-name full-set eval (routine).
+
+## 2o. V2X-Real yaw bug and S32 bicycle table (develop, from 2026-10-31 14:00)
+
+Every V2X-Real export before 9e5b903 wrote box yaw = raw + 2 x ego yaw. Car and truck AP of all HEAL-recipe V2X-Real rows (s10, s20, s25, s27, s30, s31) are on wrong labels; pedestrian (square boxes) and CooPre rows (raw labels) are unaffected. Never report s30/s31 car or truck numbers as final. Table B moves to car / bicycle / pedestrian: data chain on cluster2 (4090-4119, export, Poisson, packs), a helma node job v2xreal-bike 1189833, then dm_push to helma and s32a-h (helma-ddp, Max gave the go 2026-10-31) with their own-name full-set evals (routine). Who submits s32a-h: ask develop or Max before launching.
+
+2026-10-31 16:00: s24g full-set done (0.462 / 0.871 / 0.072). Develop c7fceb6/4b7c479: s32 series is V2X-Real-only (no Waymo init); v2b/slurm/helma-s32-chain.sh runs trainings + their full-set evals + s33/s34 zero-shot evals itself, so do not submit evals for s32/s33/s34. Bike shards packed on helma 16:13 (1189833).
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
@@ -100,8 +150,12 @@ The scoreboard opens with **Main results** (8f89108): the paper's quantitative t
 
 Times on the scoreboard page and in tick headlines are GMT+1 (Max, 2026-10-25); the snapshots keep `collected_utc` in UTC and the page converts (30c2aa1). Ticks land on the full GMT+1 hour.
 
-Never cancel or resubmit a training without Max; evaluations are routine. Progress log `.docs/progress.md`, commit one line `docs: ...`, never push. Push-notify on a finished or failed run.
+Progress log `.docs/progress.md`.
 
 ## 5. Queue commands
 
 cluster2: `squeue -u max -o "%.6i %.40j %.8T %.10M %R"`. helma: `squeue -u $USER -o "%.9i %.9P %.28j %.2t %.10M %.6D %R"`.
+
+**Table X and the S32 chain (2026-10-31):** every V2X-Real row of Table B and the transfer Table X comes from the s32 series (V2X-Real V2V only, bicycle as the third class, helma-s32-chain.sh, resubmitted as 1190102-1190127 after a catalogue fix) plus the CooPre V2V checkpoint zero-shot evals 1190101 (Waymo, rerun) / 1190013 (V2B, done). All evals run on helma while cluster2 has no memory (a colleague holds 250 GB until 2026-11-02); the cluster2 jobs 4090-4119 are the same bike export for the NAS and may stay queued. The old V2X-Real rows (s10, s20, s25, s27, s30, s31) rest on labels with a doubled ego yaw (fixed in 9e5b903) and are not paper material.
+
+**CooPre Waymo fine-tune (2026-10-31 23:10):** 1186147-51 cancelled on Max's go, resubmitted as 1191335-37 (three resume segments) + eval 1191338 with the loader fix 612798f (one thread per worker); expect about 34 min per epoch again.

@@ -21,6 +21,16 @@ The scoreboard generator is ordinary repo code: ruff-clean, typed, audited
 through `general-codebase` like anything else. Monitoring is not an excuse
 for a throwaway script — it runs every hour for weeks.
 
+## Defaults first, then the project's setting
+
+[defaults.md](defaults.md) holds what every scoreboard does on every project:
+the page behaviour (queue on top, folding, sticky headers, confirmation boxes,
+plots and their settings section), the tick procedure, what is routine, and
+the **setup interview** for a new project. Read it before every tick and
+before writing any setting. A project's setting holds only the custom half
+(sites, metrics, table structure, eval command, job history) and overrides a
+default only where it says so in so many words.
+
 ## The setting file is the source of truth
 
 Every monitored project has one setting file, centrally, so it can be pulled on

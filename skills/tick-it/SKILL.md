@@ -18,13 +18,15 @@ setting that says which project and what its rules are:
 
 Match on the repository you are in — the directory name, or the `repo:` and
 `local:` keys in each file's front matter. One match is the setting: read it
-and run its routine. Everything project-specific comes from there; this skill
-contributes only the invariants below.
+together with `run-monitoring/defaults.md` (the page and tick defaults every
+project shares) and run its routine. Everything project-specific comes from
+the setting; this skill contributes only the invariants below.
 
 **No match, and the repo has jobs running.** Do not invent a routine and do
 not tick. Find out what is actually running first — the cluster queue, the
 newest run directories, any wandb project the repo configures — then draft a
-setting from what you found, show it, and ask before the first tick. The draft
+setting from what you found, ask the setup interview in
+`run-monitoring/defaults.md`, show the draft, and ask before the first tick. The draft
 rules are in `run-monitoring`; the short version is that every run found is a
 main training until the user says otherwise, and no evaluation job is ever
 submitted from a draft.
