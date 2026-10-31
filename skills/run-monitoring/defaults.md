@@ -28,30 +28,36 @@ project only. The user's own words in the chat win over both.
    A held job reads just its reason ("Dependency", "Priority"); a click
    opens the rest: time limit, nodes, resources, and the jobs a dependency
    waits on, by name.
-3. **Every table folds closed** under its title; a click opens it.
+3. **Every table folds closed** under its title (the paper tables and every
+   table below them); a click opens it.
 4. **Confirmation boxes**: every result the user has not confirmed carries
    a red "new" box in its row and in the list on top. A table holding an
    unconfirmed result is outlined red until all its boxes are ticked.
    Ticks are written to the artifact's store (`acks/<id> = {run, at}`).
-5. **Sticky headers and page width**: each table is its own scroll box no
-   taller than the window, so its title row and column row stay on top
-   while rows scroll. Tables fit the page width (header cells wrap, IDs are
+5. **Frozen headers and page width**: a table's header rows (title,
+   column names, plot boxes) freeze at the top of the window while the
+   table passes, like a frozen pane, and leave with its last row. Tables fit
+   the page width (header cells wrap, IDs are
    cut with the full name in the tooltip, wrapped instruction rows); only a
    window narrower than the table's numbers scrolls sideways, inside the box.
-6. **Plots for every training row**: a click opens one rectangle with
+6. **Trend arrows**: left of every value with a per-epoch series, in the
+   text colour, the direction of its last five epoch-to-epoch changes:
+   ↗ rising (4 or 5 up), ↘ falling (4 or 5 down), → even (anything else);
+   the tooltip gives the count.
+7. **Plots for every training row**: a click opens one rectangle with
    three panels under each other (3 rows, 1 column): x = epoch, y = the
    metric. Each panel draws the per-epoch curve and the full-set value as a
    red dot at the checkpoint epoch it came from. An eval-only row shows its
    full-set value alone.
-7. **Picking what is plotted**: a row of checkboxes under each table's
+8. **Picking what is plotted**: a row of checkboxes under each table's
    column names, at most three ticked (the rest grey out). The **settings
    section** at the bottom of the page holds the same choice for every
    table at once, as levels: Global, then groups (e.g. "Paper tables"),
-   then each table. A level without its own choice inherits the level above,
+   then each table; the queue is its own top level (its three columns). A level without its own choice inherits the level above,
    down to the default: **the first three metric columns**. A level has an
    "inherit" button to drop its own choice. Choices go to the artifact's
    store (`plots/<scope>`) and so survive reloads.
-8. **Theme-aware and phone-safe**, per the artifact page contract.
+9. **Theme-aware and phone-safe**, per the artifact page contract.
 
 ## 3. Storage: everything reproducible from the repo
 
