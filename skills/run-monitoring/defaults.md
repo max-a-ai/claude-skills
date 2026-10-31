@@ -48,7 +48,9 @@ project only. The user's own words in the chat win over both.
    three panels under each other (3 rows, 1 column): x = epoch, y = the
    metric. Each panel draws the per-epoch curve and the full-set value as a
    red dot at the checkpoint epoch it came from. An eval-only row shows its
-   full-set value alone.
+   full-set value alone. Pointing into the plot marks the nearest epoch in all
+   three panels (guide line, ringed point, its value; at the checkpoint epoch
+   also the full-set value).
 8. **Picking what is plotted**: a row of checkboxes under each table's
    column names, at most three ticked (the rest grey out). The **settings
    section** at the bottom of the page holds the same choice for every
