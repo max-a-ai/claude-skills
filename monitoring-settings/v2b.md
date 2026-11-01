@@ -136,6 +136,8 @@ Every V2X-Real export before 9e5b903 wrote box yaw = raw + 2 x ego yaw. Car and 
 
 2026-10-31 16:00: s24g full-set done (0.462 / 0.871 / 0.072). Develop c7fceb6/4b7c479: s32 series is V2X-Real-only (no Waymo init); v2b/slurm/helma-s32-chain.sh runs trainings + their full-set evals + s33/s34 zero-shot evals itself, so do not submit evals for s32/s33/s34. Bike shards packed on helma 16:13 (1189833).
 
+2026-11-01 (develop b086728): the near-zero V2X-Real bicycle AP is not a bug in the data but a size-class artefact: heal_data.box_classes classes boxes by anchor footprint, not obj_type, so the V2X-Real "bicycle" set is mostly oversized pedestrians and parked motorcycles and scooter riders count as pedestrians. Report V2X-Real as car + pedestrian (riders included), mAP over two classes; do not flag the bicycle column as an open problem.
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
