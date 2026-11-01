@@ -40,15 +40,16 @@ project only. The user's own words in the chat win over both.
    top, with the table's column widths and its sideways scroll; clicks on
    the copy reach the real header. It works at any window width (CSS
    `position: sticky` does not: a table box that scrolls sideways traps it).
-   Tables fit the page width: text cells (IDs, row labels, headers,
-   notes) wrap anywhere, number cells wrap between arrow, value and delta,
-   number padding is tight, and columns narrow instead of overflowing. IDs
-   keep at least 8 characters and row labels 14 before wrapping, so they
-   stay readable; only a window too narrow even for that (about 900 px for
-   a 17-column table) scrolls the table sideways inside its box.
-5a. **Type**: ID and row cells in every table use the queue's name font
-   (the mono face at 12.5 px); numbers mono 11.5 px; the delta line under a
-   value 9.5 px.
+   **One line per row**: no data row wraps. The row label takes the width
+   left over and is cut with an ellipsis (full text in its tooltip), so a
+   table fits the page; only the column names may break onto a second line.
+   A window narrower than the numbers need (about 1100 px for a 17-column
+   table) scrolls the table sideways inside its box.
+5a. **Type and IDs**: ID and row cells share one small mono face (11 px);
+   numbers mono 11 px; the delta line under a value 9.5 px. The ID is the
+   series only (`s34b`, `s15-09`), the full run name in its tooltip and in
+   the row's detail. A confirmation box sits in front of the row label, so a
+   cut label never hides it. Cells align on the text baseline.
 6. **Trend arrows**: left of every value with a per-epoch series, in the
    text colour, the direction of its last five epoch-to-epoch changes:
    ↗ rising (4 or 5 up), ↘ falling (4 or 5 down), → even (anything else);
