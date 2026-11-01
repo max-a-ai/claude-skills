@@ -45,7 +45,11 @@ project only. The user's own words in the chat win over both.
    table fits the page; only the column names may break onto a second line.
    A window narrower than the numbers need (about 1100 px for a 17-column
    table) scrolls the table sideways inside its box.
-5a. **Type and IDs**: ID and row cells share one small mono face (11 px);
+5a. **Columns, type and IDs (every table, every project)**: a result table
+   holds the ID, the row label and the metric columns only; secondary facts
+   (parameters, time per sweep, message size and the like) go into the
+   row's click-open detail, so the row label gets the width (at least 26
+   characters before it is cut). ID and row cells share one small mono face (11 px);
    numbers mono 11 px; the delta line under a value 9.5 px. The ID is the
    series only (`s34b`, `s15-09`), the full run name in its tooltip and in
    the row's detail. A confirmation box sits in front of the row label, so a
