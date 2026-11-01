@@ -34,12 +34,15 @@ project only. The user's own words in the chat win over both.
    a red "new" box in its row and in the list on top. A table holding an
    unconfirmed result is outlined red until all its boxes are ticked.
    Ticks are written to the artifact's store (`acks/<id> = {run, at}`).
-5. **Frozen headers and page width**: a table's header rows (title,
-   column names, plot boxes) freeze at the top of the window while the
-   table passes, like a frozen pane, and leave with its last row. Tables fit
-   the page width (header cells wrap, IDs are
-   cut with the full name in the tooltip, wrapped instruction rows); only a
-   window narrower than the table's numbers scrolls sideways, inside the box.
+5. **Frozen headers and page width**: while a table's own header has
+   scrolled above the window and the table is still in view, a copy of its
+   header rows (title, column names, plot boxes) is pinned at the window
+   top, with the table's column widths and its sideways scroll; clicks on
+   the copy reach the real header. It works at any window width (CSS
+   `position: sticky` does not: a table box that scrolls sideways traps it).
+   Tables fit the page width where they can (header cells wrap, IDs are cut
+   with the full name in the tooltip, instruction rows wrap); a wider table
+   scrolls sideways inside its box.
 6. **Trend arrows**: left of every value with a per-epoch series, in the
    text colour, the direction of its last five epoch-to-epoch changes:
    ↗ rising (4 or 5 up), ↘ falling (4 or 5 down), → even (anything else);
@@ -47,10 +50,15 @@ project only. The user's own words in the chat win over both.
 7. **Plots for every training row**: a click opens one rectangle with
    three panels under each other (3 rows, 1 column): x = epoch, y = the
    metric. Each panel draws the per-epoch curve and the full-set value as a
-   red dot at the checkpoint epoch it came from. An eval-only row shows its
+   red dot at the checkpoint epoch it came from. The run's own curve is
+   always #244d53; behind it, in translucent grey, the curve of the best run
+   of the same table for that column (highest full-set value among the
+   table's runs with a per-epoch series; "best in this table" when it is
+   the run itself). An eval-only row shows its
    full-set value alone. Pointing into the plot marks the nearest epoch in all
-   three panels (guide line, ringed point, its value; at the checkpoint epoch
-   also the full-set value).
+   three panels (guide line, ringed points, one label: the run's value, at
+   the checkpoint epoch also its full-set value, then the best run's value
+   in grey).
 8. **Picking what is plotted**: a row of checkboxes under each table's
    column names, at most three ticked (the rest grey out). The **settings
    section** at the bottom of the page holds the same choice for every
