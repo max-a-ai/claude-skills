@@ -40,9 +40,15 @@ project only. The user's own words in the chat win over both.
    top, with the table's column widths and its sideways scroll; clicks on
    the copy reach the real header. It works at any window width (CSS
    `position: sticky` does not: a table box that scrolls sideways traps it).
-   Tables fit the page width where they can (header cells wrap, IDs are cut
-   with the full name in the tooltip, instruction rows wrap); a wider table
-   scrolls sideways inside its box.
+   Tables fit the page width: text cells (IDs, row labels, headers,
+   notes) wrap anywhere, number cells wrap between arrow, value and delta,
+   number padding is tight, and columns narrow instead of overflowing. IDs
+   keep at least 8 characters and row labels 14 before wrapping, so they
+   stay readable; only a window too narrow even for that (about 900 px for
+   a 17-column table) scrolls the table sideways inside its box.
+5a. **Type**: ID and row cells in every table use the queue's name font
+   (the mono face at 12.5 px); numbers mono 11.5 px; the delta line under a
+   value 9.5 px.
 6. **Trend arrows**: left of every value with a per-epoch series, in the
    text colour, the direction of its last five epoch-to-epoch changes:
    ↗ rising (4 or 5 up), ↘ falling (4 or 5 down), → even (anything else);
