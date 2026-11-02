@@ -142,6 +142,8 @@ Every V2X-Real export before 9e5b903 wrote box yaw = raw + 2 x ego yaw. Car and 
 
 helma: s37a-h trainings 1196833/35/37/39/41/43/45/47 with their own evals 1196834-48 (even), s24h 1196849 + eval 1196850, s38a-c eval-only 1196851/53/54, s26f eval 1196855 (done). Every training here carries its own chained eval: submit none. s37a-c HEAL + AttFuse/F-Cooper/V2X-ViT on the augmented fused frame, s37d-f ours the same, s37g ours AttFuse frozen trunk, s37h ours AttFuse proj_first without augmentation; compare s37 against s32b-d / s32f-h. s38a-c rescore s32a/i/e on the union labels. s24h = raw-floor twin of s24e. Max asked (2026-11-02 00:44) for ticks every full hour for at least 24 h, until this batch is done.
 
+2026-11-02 01:00: develop added the s39 truck chain (cda313b): s39a-i car / truck / pedestrian on V2X-Real V2V from s32p/s32q, trainings 1197362-70, own evals 1197371-79 (submit none), scoreboard Table B2. s38a-c done (union labels). s26f done.
+
 ## 3. Full-set evaluation of a finished training (routine)
 
 Score under the run's **own** name so the run dir holds the checkpoint:
@@ -170,3 +172,4 @@ cluster2: `squeue -u max -o "%.6i %.40j %.8T %.10M %R"`. helma: `squeue -u $USER
 
 2026-11-02 (develop): the fusion fix batch goes through v2b/slurm/helma-s37-fusion-fix.sh, which submits the trainings s37a-h and s24h with their own full-set evals plus the eval-only rows s38a-c and s26f, so do not submit evals for s37 / s38 / s24h / s26f. Rows land in Table B (s37, s38), Table A (s24g, s24h) and Table C (s26f) and get "new" boxes as usual. On V2X-Real the bicycle column is n/a by design (Table B's note); do not read it as a missing result.
 2026-11-02 01:45 CET: fusion-fix batch submitted on helma: s37a 1196833 (eval 1196834), s37b 1196835 (1196836), s37c 1196837 (1196838), s37d 1196839 (1196840), s37e 1196841 (1196842), s37f 1196843 (1196844), s37g 1196845 (1196846), s37h 1196847 (1196848), s24h 1196849 (1196850); eval-only s38a 1196851, s38b 1196853, s38c 1196854, s26f 1196855. Trainings 1 to 2 h each on 4 H100 once they start; the evals follow by dependency.
+2026-11-02 02:40 CET: s39 truck-class V2V chain submitted on helma (v2b/slurm/helma-s39-truck-chain.sh, the s32 series with car / truck / pedestrian, Table B2): s39a 1197362, s39e 1197363, s39i 1197364, s39b 1197365, s39c 1197366, s39d 1197367, s39f 1197368, s39g 1197369, s39h 1197370; evals 1197371-79 (s39a-i in order) by dependency, so do not submit evals for s39. The s37/s38/s24h batch is still queued.
