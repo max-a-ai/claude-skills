@@ -103,7 +103,11 @@ published page except for the header's time and commit.
 5. Render from the repo script, publish in place (no `force`; on a
    conflict read the live version and merge).
 6. Report in the `tick-it` layout; append changed readings to the
-   project's progress log and commit one line `docs: ...`. Never push.
+   project's progress log. Commit the log once a day, at the first
+   tick after midnight, one line `docs: <date> ticks`; an idle tick
+   appends nothing and never commits. A launch, a finished run or a
+   failure may still be committed at once. Never push. (Max,
+   2026-11-03: one commit per hourly tick is noise in the history.)
 
 ## 5. What is routine and what is not
 
